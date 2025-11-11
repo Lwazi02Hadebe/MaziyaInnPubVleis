@@ -1,0 +1,268 @@
+﻿@model IEnumerable<MaziyaInnPubVleis.Models.Inventory>
+@inject MaziyaInnPubVleis.Services.ISixPackService SixPackService
+@{
+    ViewData["Title"] = "Welcome to Maziya Inn";
+    Layout = "_CustomerLayout";
+}
+
+<!-- Hero Section -->
+<section class="customer-hero text-center">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-4">Welcome to Maziya Inn</h1>
+        <p class="lead mb-4">Experience premium dining with exceptional food, drinks, and entertainment</p>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="input-group input-group-lg">
+                    <input type="text" class="form-control" placeholder="Search for food, drinks, and more..." id="searchInput">
+                    <button class="btn btn-secondary" type="button">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="mb-3">Why Choose Maziya Inn?</h2>
+                <p class="text-muted">Discover what makes us the premier destination for food and entertainment</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <i class="fas fa-utensils"></i>
+                    <h4>Premium Dining</h4>
+                    <p>Experience our carefully crafted menu featuring the finest ingredients and traditional recipes.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <i class="fas fa-wine-glass-alt"></i>
+                    <h4>Extensive Bar</h4>
+                    <p>Choose from our wide selection of premium beers, wines, and craft cocktails.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <i class="fas fa-music"></i>
+                    <h4>Live Entertainment</h4>
+                    <p>Enjoy live music and entertainment in our spacious and vibrant venue.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Menu Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="mb-3">Our Menu</h2>
+                <p class="text-muted">Discover our delicious selection of food and beverages</p>
+            </div>
+        </div>
+
+        <div class="menu-category">
+            <h4 class="mb-4"><i class="fas fa-utensils me-2 text-primary"></i>Food & Beverages</h4>
+            <div class="row" id="productsContainer">
+                @foreach (var product in Model.Where(p => p.IsActive && p.StockLevel > 0))
+                {
+                    <div class="col-lg-4 col-md-6 mb-4 product-item" data-name="@product.ProductName.ToLower()">
+                        <div class="card product-card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">@product.ProductName</h5>
+                                <p class="card-text text-muted small">@product.Description</p>
+
+                                @if (product.IsSixPack)
+                                {
+                                    var breakdown = SixPackService.CalculateSixPackBreakdown(product);
+                                    <div class="pricing-info mb-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-primary fs-5">
+                                                R @breakdown.UnitPrice.ToString("N2") <small class="text-muted">each</small>
+                                            </span>
+                                            <span class="badge bg-info">Six-Pack</span>
+                                        </div>
+                                        <small class="text-muted">
+                                            or R @product.UnitPrice.ToString("N2") for @product.SixPackQuantity
+                                        </small>
+                                        <div class="mt-1">
+                                            <small class="text-success">
+                                                <i class="fas fa-box"></i> Stock: @product.StockLevel units
+                                            </small>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span class="fw-bold text-primary fs-5">R @product.UnitPrice.ToString("N2")</span>
+                                        <span class="badge bg-@(product.StockLevel > 10 ? "success" : "warning")">
+                                            @product.StockLevel in stock
+                                        </span>
+                                    </div>
+                                }
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0">
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-primary add-to-cart-btn"
+                                            data-product-id="@product.ProductId"
+                                            data-product-name="@product.ProductName"
+                                            data-is-sixpack="@product.IsSixPack">
+                                        <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (!Model.Any(p => p.IsActive && p.StockLevel > 0))
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                <h4>No Products Available</h4>
+                <p class="text-muted">Please check back later for our menu items.</p>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- Events Preview -->
+@if (ViewBag.UpcomingEvents != null && ((IEnumerable<MaziyaInnPubVleis.Models.Event>)ViewBag.UpcomingEvents).Any())
+{
+    <section class="py-5" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-12 text-center">
+                    <h2 class="mb-3">Upcoming Events</h2>
+                    <p class="text-muted">Join us for exciting events and entertainment</p>
+                </div>
+            </div>
+
+            <div class="row">
+                @foreach (var eventItem in ViewBag.UpcomingEvents)
+                {
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">@eventItem.EventName</h5>
+                                <p class="card-text text-muted">@eventItem.Description</p>
+                                <div class="event-details">
+                                    <div class="mb-2">
+                                        <i class="fas fa-calendar text-primary me-2"></i>
+                                        <strong>Date:</strong> @eventItem.EventDate.ToString("dd MMM yyyy")
+                                    </div>
+                                    <div class="mb-2">
+                                        <i class="fas fa-clock text-primary me-2"></i>
+                                        <strong>Time:</strong> @eventItem.EventDate.ToString("HH:mm")
+                                    </div>
+                                    <div class="mb-2">
+                                        <i class="fas fa-ticket-alt text-primary me-2"></i>
+                                        <strong>Price:</strong> R @eventItem.TicketPrice.ToString("N2")
+                                    </div>
+                                    <div class="mb-3">
+                                        <i class="fas fa-users text-primary me-2"></i>
+                                        <strong>Available:</strong> @(eventItem.MaxAttendees - eventItem.CurrentAttendees) / @eventItem.MaxAttendees
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <div class="d-grid gap-2">
+                                    <a href="@Url.Action("EventDetails", "Customer", new { id = eventItem.EventId })" class="btn btn-primary">
+                                        <i class="fas fa-info-circle me-2"></i>View Details & Book
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="@Url.Action("Events", "Customer")" class="btn btn-outline-primary btn-lg">
+                    View All Events <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+}
+
+@section Scripts {
+    <script>
+        // Product search functionality
+        $('#searchInput').on('input', function() {
+            const searchTerm = $(this).val().toLowerCase();
+            $('.product-item').each(function() {
+                const productName = $(this).data('name');
+                if (productName.includes(searchTerm)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+
+        // Enhanced add to cart function with six-pack handling
+        function addToCart(productId, productName, isSixPack = false) {
+            let quantity = 1;
+            let message = `How many "${productName}" would you like to add to cart?`;
+
+            if (isSixPack) {
+                message = `"${productName}" is sold in six-packs.\n\nHow many individual units would you like? (Each order will be fulfilled from six-packs)`;
+            }
+
+            const inputQuantity = prompt(message, '1');
+
+            if (inputQuantity && !isNaN(inputQuantity) && parseInt(inputQuantity) > 0) {
+                quantity = parseInt(inputQuantity);
+
+                // Get anti-forgery token
+                var token = $('input[name="__RequestVerificationToken"]').val();
+
+                $.post('@Url.Action("AddToCart", "Customer")', {
+                    productId: productId,
+                    quantity: quantity,
+                    __RequestVerificationToken: token
+                })
+                .done(function(response) {
+                    if (response.success) {
+                        updateCartCount();
+                        showNotification('Product added to cart!', 'success');
+                    } else {
+                        showNotification('Error: ' + response.message, 'error');
+                    }
+                })
+                .fail(function(xhr, status, error) {
+                    console.error('AJAX Error:', status, error);
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        showNotification('Error: ' + xhr.responseJSON.message, 'error');
+                    } else {
+                        showNotification('Error adding product to cart. Please try again.', 'error');
+                    }
+                });
+            } else if (inputQuantity !== null) {
+                showNotification('Please enter a valid quantity (number greater than 0).', 'error');
+            }
+        }
+
+        // Update product card click handlers
+        $(document).ready(function() {
+            $('.add-to-cart-btn').on('click', function() {
+                const productId = $(this).data('product-id');
+                const productName = $(this).data('product-name');
+                const isSixPack = $(this).data('is-sixpack') === 'True';
+
+                addToCart(productId, productName, isSixPack);
+            });
+        });
+    </script>
+}

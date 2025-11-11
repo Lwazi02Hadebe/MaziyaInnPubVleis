@@ -1,0 +1,208 @@
+﻿@model dynamic
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="dashboard-header">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1 class="h3 mb-2">Welcome to Maziya Inn Management</h1>
+            <p class="text-muted mb-0">Monitor your business performance and manage operations efficiently</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <div class="btn-group">
+                <a href="@Url.Action("Create", "Order")" class="btn btn-primary">
+                    <i class="fas fa-cash-register me-2"></i>New Sale
+                </a>
+                <a href="@Url.Action("Create", "Inventory")" class="btn btn-secondary">
+                    <i class="fas fa-plus me-2"></i>Add Product
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="quick-actions">
+    <h5 class="mb-4"><i class="fas fa-bolt me-2 text-warning"></i>Quick Actions</h5>
+    <div class="row">
+        <div class="col-md-3 col-6">
+            <a href="@Url.Action("Create", "Order")" class="action-btn">
+                <i class="fas fa-cash-register"></i>
+                <div>Point of Sale</div>
+            </a>
+        </div>
+        <div class="col-md-3 col-6">
+            <a href="@Url.Action("Index", "Inventory")" class="action-btn">
+                <i class="fas fa-boxes"></i>
+                <div>Manage Inventory</div>
+            </a>
+        </div>
+        <div class="col-md-3 col-6">
+            <a href="@Url.Action("DailySales", "Report")" class="action-btn">
+                <i class="fas fa-chart-line"></i>
+                <div>View Reports</div>
+            </a>
+        </div>
+        <div class="col-md-3 col-6">
+            <a href="@Url.Action("LowStock", "Inventory")" class="action-btn">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>Stock Alerts</div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Statistics Cards -->
+    <div class="col-md-3 mb-4">
+        <div class="card stat-card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">R @ViewBag.TotalInventoryValue?.ToString("N2")</h4>
+                        <p class="card-text">Total Inventory Value</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-boxes fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card stat-card text-white bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@ViewBag.LowStockItems?.Count</h4>
+                        <p class="card-text">Low Stock Items</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card stat-card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">Today</h4>
+                        <p class="card-text">Daily Sales</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card stat-card text-white bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">Active</h4>
+                        <p class="card-text">System Status</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Low Stock Alerts -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>Low Stock Alerts
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (ViewBag.LowStockItems.Count > 0)
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Current Stock</th>
+                                    <th>Min Level</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in ViewBag.LowStockItems)
+                                {
+                                    <tr>
+                                        <td>@item.ProductName</td>
+                                        <td>
+                                            <span class="badge bg-warning">@item.StockLevel</span>
+                                        </td>
+                                        <td>@item.MinimumStockLevel</td>
+                                        <td>
+                                            <a href="@Url.Action("Edit", "Inventory", new { id = item.ProductId })"
+                                               class="btn btn-sm btn-outline-primary">
+                                                Restock
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle fa-2x text-success mb-3"></i>
+                        <p class="text-muted">No low stock items. All inventory levels are adequate.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-history text-primary me-2"></i>Recent Activity
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="@Url.Action("Create", "Order")" class="btn btn-success btn-lg">
+                        <i class="fas fa-cash-register me-2"></i>Process New Sale
+                    </a>
+                    <a href="@Url.Action("Index", "Inventory")" class="btn btn-primary">
+                        <i class="fas fa-boxes me-2"></i>Manage Inventory
+                    </a>
+                    <a href="@Url.Action("DailySales", "Report")" class="btn btn-info">
+                        <i class="fas fa-chart-bar me-2"></i>View Daily Report
+                    </a>
+                </div>
+                <div class="mt-4">
+                    <h6>System Information</h6>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-database text-primary me-2"></i>Database: SQLite</li>
+                        <li><i class="fas fa-shield-alt text-success me-2"></i>Security: Role-based Access</li>
+                        <li><i class="fas fa-mobile-alt text-info me-2"></i>Platform: Web & Mobile Ready</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

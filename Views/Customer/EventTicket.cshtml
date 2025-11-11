@@ -1,0 +1,257 @@
+﻿
+@model MaziyaInnPubVleis.Models.EventBooking
+@{
+    ViewData["Title"] = "Event Ticket";
+    Layout = ViewBag.PrintMode ? "_PrintLayout" : "_CustomerLayout";
+}
+
+@if (!ViewBag.PrintMode)
+{
+    <!-- Hero Section -->
+    <section class="customer-hero">
+        <div class="container">
+            <h1 class="display-4 fw-bold text-white mb-3">Event Ticket 🎟️</h1>
+            <p class="lead text-white mb-0">Booking #@Model.BookingId</p>
+        </div>
+    </section>
+}
+
+<div class="container @(ViewBag.PrintMode ? "py-3" : "py-5")">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <!-- Ticket Card -->
+            <div class="card border-0 shadow-lg ticket-card">
+                <!-- Ticket Header -->
+                <div class="card-header bg-gradient-primary text-white py-4 text-center">
+                    <div class="ticket-perforation-top"></div>
+                    <h3 class="mb-2">MAZIYA INN PUB & VLEIS</h3>
+                    <h5 class="mb-0">EVENT TICKET</h5>
+                    <div class="ticket-perforation-bottom mt-3"></div>
+                </div>
+
+                <div class="card-body p-4">
+                    <!-- Event Details -->
+                    <div class="text-center mb-4">
+                        <h4 class="text-primary mb-2">@Model.Event.EventName</h4>
+                        <p class="text-muted mb-3">@Model.Event.Description</p>
+
+                        <!-- QR Code Placeholder -->
+                        <div class="qr-code-placeholder mb-3 mx-auto">
+                            <div class="bg-light border rounded p-3 text-center">
+                                <i class="fas fa-qrcode fa-3x text-muted mb-2"></i>
+                                <br>
+                                <small class="text-muted">QR Code</small>
+                                <br>
+                                <small class="text-muted">Booking #@Model.BookingId</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ticket Information -->
+                    <div class="ticket-info">
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>Booking ID:</strong>
+                            </div>
+                            <div class="col-6 text-end">
+                                <span class="badge bg-dark">#@Model.BookingId</span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>Event Date:</strong>
+                            </div>
+                            <div class="col-6 text-end">
+                                @Model.Event.EventDate.ToString("dddd, MMMM dd, yyyy")
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>Event Time:</strong>
+                            </div>
+                            <div class="col-6 text-end">
+                                @Model.Event.EventDate.ToString("hh:mm tt") - @Model.Event.EndDate.ToString("hh:mm tt")
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>Number of Tickets:</strong>
+                            </div>
+                            <div class="col-6 text-end">
+                                <span class="badge bg-primary">@Model.NumberOfTickets</span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>Ticket Price:</strong>
+                            </div>
+                            <div class="col-6 text-end">
+                                R @Model.Event.TicketPrice.ToString("N2") each
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>Total Amount:</strong>
+                            </div>
+                            <div class="col-6 text-end">
+                                <strong class="text-success">R @Model.TotalAmount.ToString("N2")</strong>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>Booking Date:</strong>
+                            </div>
+                            <div class="col-6 text-end">
+                                @Model.BookingDate.ToString("MMM dd, yyyy")
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Status:</strong>
+                            </div>
+                            <div class="col-6 text-end">
+                                <span class="badge bg-@(Model.Status == MaziyaInnPubVleis.Models.BookingStatus.Confirmed ? "success" : "warning")">
+                                    @Model.Status
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Customer Information -->
+                    <div class="customer-info">
+                        <h6 class="mb-3">Customer Information</h6>
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Name:</strong><br>
+                                @Model.Customer.Name
+                            </div>
+                            <div class="col-6">
+                                <strong>Email:</strong><br>
+                                @Model.Customer.Email
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Venue Information -->
+                    <div class="venue-info mt-4 p-3 bg-light rounded">
+                        <h6 class="mb-2">Venue Information</h6>
+                        <p class="mb-1">
+                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                            Maziya Inn Pub & Vleis
+                        </p>
+                        <p class="mb-1">123 Main Street, Johannesburg, 2000</p>
+                        <p class="mb-0">
+                            <i class="fas fa-phone text-primary me-2"></i>
+                            (011) 555-1234
+                        </p>
+                    </div>
+
+                    <!-- Important Notes -->
+                    <div class="alert alert-warning mt-4">
+                        <h6 class="alert-heading mb-2">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Important Notes
+                        </h6>
+                        <ul class="mb-0 small">
+                            <li>Please arrive 15 minutes before the event starts</li>
+                            <li>Bring this ticket (digital or printed) for entry</li>
+                            <li>Valid for @Model.NumberOfTickets person(s)</li>
+                            <li>No refunds or exchanges unless event is cancelled</li>
+                            <li>For inquiries: events@maziyainn.co.za</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Ticket Footer -->
+                <div class="card-footer bg-light text-center py-3">
+                    <small class="text-muted">
+                        Ticket Generated: @DateTime.Now.ToString("f") |
+                        Valid for entry until event start time
+                    </small>
+                </div>
+            </div>
+
+            <!-- Action Buttons (Non-Print View) -->
+            @if (!ViewBag.PrintMode)
+            {
+                <div class="text-center mt-4">
+                    <div class="btn-group" role="group">
+                        <a href="@Url.Action("EventTicket", new { id = Model.BookingId })"
+                           class="btn btn-primary" target="_blank">
+                            <i class="fas fa-print me-2"></i>Print Ticket
+                        </a>
+                        <a href="@Url.Action("DownloadEventTicket", new { id = Model.BookingId })"
+                           class="btn btn-outline-primary">
+                            <i class="fas fa-download me-2"></i>Download PDF
+                        </a>
+                        <a href="@Url.Action("MyBookings", "Customer")"
+                           class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Bookings
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .ticket-card {
+        max-width: 500px;
+        margin: 0 auto;
+        border: 2px solid #dee2e6;
+    }
+
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+
+    .ticket-perforation-top, .ticket-perforation-bottom {
+        height: 5px;
+        background: repeating-linear-gradient( 45deg, transparent, transparent 10px, rgba(255,255,255,0.3) 10px, rgba(255,255,255,0.3) 20px );
+    }
+
+    .qr-code-placeholder {
+        max-width: 150px;
+    }
+
+    .ticket-info .row {
+        border-bottom: 1px dashed #dee2e6;
+        padding: 8px 0;
+    }
+
+        .ticket-info .row:last-child {
+            border-bottom: none;
+        }
+
+    @@media print {
+        .btn-group {
+            display: none !important;
+        }
+
+        .customer-hero {
+            display: none !important;
+        }
+
+        .container {
+            padding: 0 !important;
+        }
+
+        .card {
+            border: 2px solid #000 !important;
+            box-shadow: none !important;
+        }
+
+        .ticket-perforation-top, .ticket-perforation-bottom {
+            background: repeating-linear-gradient( 45deg, transparent, transparent 10px, #000 10px, #000 20px );
+        }
+    }
+</style>

@@ -1,0 +1,157 @@
+﻿@model MaziyaInnPubVleis.Models.Inventory
+@{
+    ViewData["Title"] = "Product Details";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Product Details</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="@Url.Action("Index")" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Inventory
+        </a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Product Information</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Product ID:</dt>
+                    <dd class="col-sm-8">@Model.ProductId</dd>
+
+                    <dt class="col-sm-4">Product Name:</dt>
+                    <dd class="col-sm-8">@Model.ProductName</dd>
+
+                    <dt class="col-sm-4">Description:</dt>
+                    <dd class="col-sm-8">@(string.IsNullOrEmpty(Model.Description) ? "N/A" : Model.Description)</dd>
+
+                    <dt class="col-sm-4">Stock Level:</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge @(Model.StockLevel <= Model.MinimumStockLevel ? "bg-warning" : "bg-success")">
+                            @Model.StockLevel units
+                        </span>
+                    </dd>
+
+                    <dt class="col-sm-4">Minimum Stock:</dt>
+                    <dd class="col-sm-8">@Model.MinimumStockLevel units</dd>
+
+                    @if (Model.IsSixPack)
+                    {
+                        <dt class="col-sm-4">Pack Configuration:</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-info">Six-Pack (@Model.SixPackQuantity units per pack)</span>
+                        </dd>
+
+                        <dt class="col-sm-4">Six-Pack Selling Price:</dt>
+                        <dd class="col-sm-8">R @Model.UnitPrice.ToString("N2")</dd>
+
+                        <dt class="col-sm-4">Six-Pack Cost Price:</dt>
+                        <dd class="col-sm-8">R @Model.CostPrice.ToString("N2")</dd>
+
+                        <dt class="col-sm-4">Single Unit Selling Price:</dt>
+                        <dd class="col-sm-8">R @Model.SingleUnitPrice.ToString("N2")</dd>
+
+                        <dt class="col-sm-4">Single Unit Cost Price:</dt>
+                        <dd class="col-sm-8">R @Model.SingleUnitCost.ToString("N2")</dd>
+
+                        <dt class="col-sm-4">Single Unit Profit:</dt>
+                        <dd class="col-sm-8">R @Model.SingleUnitProfit.ToString("N2")</dd>
+
+                        <dt class="col-sm-4">Six-Pack Profit:</dt>
+                        <dd class="col-sm-8">R @Model.ProfitPerUnit.ToString("N2")</dd>
+                    }
+                    else
+                    {
+                        <dt class="col-sm-4">Unit Selling Price:</dt>
+                        <dd class="col-sm-8">R @Model.UnitPrice.ToString("N2")</dd>
+
+                        <dt class="col-sm-4">Cost Price:</dt>
+                        <dd class="col-sm-8">R @Model.CostPrice.ToString("N2")</dd>
+
+                        <dt class="col-sm-4">Profit per Unit:</dt>
+                        <dd class="col-sm-8">R @Model.ProfitPerUnit.ToString("N2")</dd>
+                    }
+
+                    <dt class="col-sm-4">Profit Margin:</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge @(Model.ProfitMargin >= 30 ? "bg-success" : Model.ProfitMargin >= 20 ? "bg-warning" : "bg-danger")">
+                            @Model.ProfitMargin.ToString("N2")%
+                        </span>
+                    </dd>
+
+                    <dt class="col-sm-4">Supplier:</dt>
+                    <dd class="col-sm-8">@(Model.Supplier?.Name ?? "N/A")</dd>
+
+                    <dt class="col-sm-4">Active:</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.IsActive)
+                        {
+                            <span class="badge bg-success">Yes</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">No</span>
+                        }
+                    </dd>
+                </dl>
+
+                @if (Model.IsActive)
+                {
+                    <div class="mt-4 border-top pt-3">
+                        <h6>Test Sales</h6>
+                        <div class="btn-group" role="group">
+                            @if (Model.IsSixPack)
+                            {
+                                <a href="@Url.Action("TestSixPackSale", new { id = Model.ProductId, quantity = 1 })"
+                                   class="btn btn-outline-primary btn-sm">
+                                    Sell 1 Six-Pack
+                                </a>
+                                <a href="@Url.Action("TestSingleUnitSale", new { id = Model.ProductId, quantity = 1 })"
+                                   class="btn btn-outline-secondary btn-sm">
+                                    Sell 1 Single Unit
+                                </a>
+                            }
+                            else
+                            {
+                                <a href="@Url.Action("TestSingleUnitSale", new { id = Model.ProductId, quantity = 1 })"
+                                   class="btn btn-outline-primary btn-sm">
+                                    Sell 1 Unit
+                                </a>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <div class="mt-4">
+                    <a href="@Url.Action("Edit", new { id = Model.ProductId })" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="@Url.Action("Delete", new { id = Model.ProductId })" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </a>
+                    <a href="@Url.Action("Index")" class="btn btn-secondary">Back to List</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

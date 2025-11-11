@@ -1,0 +1,212 @@
+﻿
+@model MaziyaInnPubVleis.Models.Order
+@{
+    ViewData["Title"] = "Order Receipt";
+    Layout = ViewBag.PrintMode ? "_PrintLayout" : "_CustomerLayout";
+}
+
+@if (!ViewBag.PrintMode)
+{
+    <!-- Hero Section -->
+    <section class="customer-hero">
+        <div class="container">
+            <h1 class="display-4 fw-bold text-white mb-3">Order Receipt 📄</h1>
+            <p class="lead text-white mb-0">Order #@Model.OrderId</p>
+        </div>
+    </section>
+}
+
+<div class="container @(ViewBag.PrintMode ? "py-3" : "py-5")">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Receipt Card -->
+            <div class="card border-0 shadow-sm receipt-card">
+                <div class="card-header bg-dark text-white py-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h4 class="card-title mb-0">
+                                <i class="fas fa-receipt me-2"></i>MAZIYA INN PUB & VLEIS
+                            </h4>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <small>Receipt #@Model.OrderId</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Business Info -->
+                    <div class="text-center mb-4">
+                        <h5 class="text-primary mb-1">MAZIYA INN PUB & VLEIS</h5>
+                        <p class="text-muted mb-1">123 Main Street, Johannesburg, 2000</p>
+                        <p class="text-muted mb-1">Phone: (011) 555-1234 | Email: info@maziyainn.co.za</p>
+                        <p class="text-muted mb-0">VAT Registration No: 123456789</p>
+                    </div>
+
+                    <hr>
+
+                    <!-- Order & Customer Info -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Order Information</h6>
+                            <p class="mb-1"><strong>Order #:</strong> @Model.OrderId</p>
+                            <p class="mb-1"><strong>Date:</strong> @Model.OrderDate.ToString("f")</p>
+                            <p class="mb-0">
+                                <strong>Status:</strong>
+                                <span class="badge bg-@(Model.Status == MaziyaInnPubVleis.Models.OrderStatus.Completed ? "success" : "warning")">
+                                    @Model.Status
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Customer Information</h6>
+                            <p class="mb-1"><strong>Name:</strong> @Model.Customer?.Name</p>
+                            <p class="mb-1"><strong>Email:</strong> @Model.Customer?.Email</p>
+                            <p class="mb-0"><strong>Phone:</strong> @Model.Customer?.Phone</p>
+                        </div>
+                    </div>
+
+                    <!-- Order Items -->
+                    <h6 class="border-bottom pb-2">Order Items</h6>
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Item</th>
+                                    <th class="text-center">Qty</th>
+                                    <th class="text-end">Unit Price</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.OrderItems)
+                                {
+                                    <tr>
+                                        <td>
+                                            @item.Inventory.ProductName
+                                            @if (item.Inventory.IsSixPack)
+                                            {
+                                                <br>
+                                        
+                                                <small class="text-muted">Six-Pack Item</small>
+                                            }
+                                        </td>
+                                        <td class="text-center">@item.Quantity</td>
+                                        <td class="text-end">R @item.UnitPrice.ToString("N2")</td>
+                                        <td class="text-end">R @item.TotalPrice.ToString("N2")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Payment Summary -->
+                    <div class="row justify-content-end">
+                        <div class="col-md-6">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Subtotal:</strong></td>
+                                            <td class="text-end">R @((Model.TotalAmount - Model.VATAmount).ToString("N2"))</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>VAT (15%):</strong></td>
+                                            <td class="text-end">R @Model.VATAmount.ToString("N2")</td>
+                                        </tr>
+                                        <tr class="table-success">
+                                            <td><strong>TOTAL AMOUNT:</strong></td>
+                                            <td class="text-end"><strong>R @Model.TotalAmount.ToString("N2")</strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <p class="mb-1"><strong>Payment Method:</strong> @Model.PaymentMethod</p>
+                            @if (!string.IsNullOrEmpty(Model.PaymentReference))
+                            {
+                                <p class="mb-0"><strong>Reference:</strong> @Model.PaymentReference</p>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Thank You Message -->
+                    <div class="alert alert-success text-center">
+                        <h6 class="mb-2">Thank you for your order!</h6>
+                        <p class="mb-0">We appreciate your business and look forward to serving you again.</p>
+                    </div>
+
+                    <!-- Terms & Conditions -->
+                    <div class="border-top pt-3">
+                        <h6>Terms & Conditions</h6>
+                        <ul class="small text-muted mb-0">
+                            <li>All prices include VAT where applicable</li>
+                            <li>Returns accepted within 7 days with original receipt</li>
+                            <li>For inquiries, please contact (011) 555-1234</li>
+                            <li>This receipt serves as your proof of purchase</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-light text-center">
+                    <small class="text-muted">
+                        Generated on @DateTime.Now.ToString("f") |
+                        Transaction ID: TXN-@Model.OrderId-@DateTime.Now.ToString("yyyyMMdd")
+                    </small>
+                </div>
+            </div>
+
+            <!-- Action Buttons (Non-Print View) -->
+            @if (!ViewBag.PrintMode)
+            {
+                <div class="text-center mt-4">
+                    <div class="btn-group" role="group">
+                        <a href="@Url.Action("OrderReceipt", new { id = Model.OrderId })"
+                           class="btn btn-primary" target="_blank">
+                            <i class="fas fa-print me-2"></i>Print Receipt
+                        </a>
+                        <a href="@Url.Action("DownloadOrderReceipt", new { id = Model.OrderId })"
+                           class="btn btn-outline-primary">
+                            <i class="fas fa-download me-2"></i>Download PDF
+                        </a>
+                        <a href="@Url.Action("Orders", "Customer")"
+                           class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Orders
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .receipt-card {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    @@media print {
+        .btn-group {
+            display: none !important;
+        }
+
+        .customer-hero {
+            display: none !important;
+        }
+
+        .container {
+            padding: 0 !important;
+        }
+
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+    }
+</style>

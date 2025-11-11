@@ -1,0 +1,192 @@
+﻿@model List<MaziyaInnPubVleis.Models.Event>
+@{
+    ViewData["Title"] = "Event Management";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">
+            <i class="fas fa-calendar-alt"></i> Event Management
+        </h1>
+        <div class="btn-group">
+            <a href="@Url.Action("EventBookings", "Manager")" class="btn btn-outline-info">
+                <i class="fas fa-ticket-alt"></i> View Bookings
+            </a>
+            <a href="@Url.Action("CreateEvent", "Manager")" class="btn btn-outline-success">
+                <i class="fas fa-plus"></i> Create Event
+            </a>
+        </div>
+    </div>
+
+    <!-- Event Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center py-3">
+                    <h6>Total Events</h6>
+                    <h4>@Model.Count</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center py-3">
+                    <h6>Upcoming Events</h6>
+                    <h4>@Model.Count(e => e.EventDate >= DateTime.Today && e.Status == EventStatus.Scheduled)</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center py-3">
+                    <h6>Total Attendees</h6>
+                    <h4>@Model.Sum(e => e.CurrentAttendees)</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center py-3">
+                    <h6>Revenue Potential</h6>
+                    <h4>R @Model.Sum(e => e.CurrentAttendees * e.TicketPrice).ToString("N0")</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Events Table -->
+    <div class="card">
+        <div class="card-header">
+            <h6 class="m-0 font-weight-bold text-primary">All Events</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="eventsTable">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Event Name</th>
+                            <th>Date & Time</th>
+                            <th>Attendees</th>
+                            <th>Ticket Price</th>
+                            <th>Revenue</th>
+                            <th>Status</th>
+                            <th>Created By</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var eventItem in Model)
+                        {
+                            var revenue = eventItem.CurrentAttendees * eventItem.TicketPrice;
+                            var isUpcoming = eventItem.EventDate >= DateTime.Today && eventItem.Status == EventStatus.Scheduled;
+
+                            <tr class="@(isUpcoming ? "table-success" : "")">
+                                <td>
+                                    <strong>@eventItem.EventName</strong>
+                                    <br>
+                                    <small class="text-muted">@eventItem.Description</small>
+                                </td>
+                                <td>
+                                    @eventItem.EventDate.ToString("MMM dd, yyyy HH:mm")
+                                    <br>
+                                    <small class="text-muted">to @eventItem.EndDate.ToString("HH:mm")</small>
+                                </td>
+                                <td>
+                                    <span class="badge badge-@(eventItem.CurrentAttendees >= eventItem.MaxAttendees ? "danger" : "success")">
+                                        @eventItem.CurrentAttendees / @eventItem.MaxAttendees
+                                    </span>
+                                    <br>
+                                    <small class="text-muted">@((eventItem.CurrentAttendees * 100.0 / eventItem.MaxAttendees).ToString("N1"))% full</small>
+                                </td>
+                                <td>R @eventItem.TicketPrice.ToString("N2")</td>
+                                <td>R @revenue.ToString("N2")</td>
+                                <td>
+                                    <span class="badge badge-@GetEventStatusBadgeClass(eventItem.Status)">
+                                        @eventItem.Status
+                                    </span>
+                                </td>
+                                <td>
+                                    <small>@eventItem.CreatedBy?.Username</small>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-info"
+                                                onclick="viewEventDetails(@eventItem.EventId)">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-outline-primary"
+                                                onclick="viewEventBookings(@eventItem.EventId)">
+                                            <i class="fas fa-ticket-alt"></i>
+                                        </button>
+                                        @if (isUpcoming)
+                                        {
+                                            <button class="btn btn-outline-danger"
+                                                    onclick="cancelEvent(@eventItem.EventId, '@eventItem.EventName')">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#eventsTable').DataTable({
+                pageLength: 25,
+                order: [[1, 'desc']]
+            });
+        });
+
+        function viewEventDetails(eventId) {
+            alert('Viewing details for event #' + eventId);
+            // Implementation would show event details modal
+        }
+
+        function viewEventBookings(eventId) {
+            alert('Viewing bookings for event #' + eventId);
+            // Implementation would redirect to event bookings
+        }
+
+        function cancelEvent(eventId, eventName) {
+            const reason = prompt('Please enter reason for cancellation:');
+            if (reason) {
+                $.post('@Url.Action("CancelEvent", "Manager")', {
+                    eventId: eventId,
+                    reason: reason
+                })
+                .done(function (response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                })
+                .fail(function () {
+                    alert('Error cancelling event');
+                });
+            }
+        }
+    </script>
+}
+
+@functions {
+    public string GetEventStatusBadgeClass(EventStatus status)
+    {
+        return status switch
+        {
+            EventStatus.Scheduled => "success",
+            EventStatus.Ongoing => "primary",
+            EventStatus.Completed => "secondary",
+            EventStatus.Cancelled => "danger",
+            _ => "warning"
+        };
+    }
+}

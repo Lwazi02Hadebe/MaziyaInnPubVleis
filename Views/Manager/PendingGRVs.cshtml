@@ -1,0 +1,127 @@
+﻿@model List<MaziyaInnPubVleis.Models.GoodsReceivedVoucher>
+@{
+    ViewData["Title"] = "Pending GRVs";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 text-warning">
+            <i class="fas fa-clipboard-check"></i> Pending GRV Authorization
+        </h1>
+        <div class="btn-group">
+            <a href="@Url.Action("Dashboard", "Manager")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="alert alert-info">
+            <h6><i class="fas fa-info-circle"></i> Authorization Required</h6>
+            <p class="mb-0">You have <strong>@Model.Count</strong> Goods Received Voucher(s) pending authorization.</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-list"></i> GRVs Pending Authorization
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover" id="pendingGRVsTable">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>GRV ID</th>
+                                <th>Reference Number</th>
+                                <th>Purchase Order</th>
+                                <th>Received Date</th>
+                                <th>Received By</th>
+                                <th>Items Count</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var grv in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>#@grv.GRVId</strong>
+                                    </td>
+                                    <td>@grv.ReferenceNumber</td>
+                                    <td>
+                                        PO #@grv.PurchaseOrderId
+                                        <br>
+                                        <small class="text-muted">@grv.PurchaseOrder?.Supplier?.Name</small>
+                                    </td>
+                                    <td>@grv.ReceivedDate.ToString("MMM dd, yyyy")</td>
+                                    <td>@grv.ReceivedBy?.Username</td>
+                                    <td>
+                                        <span class="badge badge-primary">
+                                            @(grv.GRVItems?.Count ?? 0) items
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-info"
+                                                    onclick="viewGRVDetails(@grv.GRVId)">
+                                                <i class="fas fa-eye"></i> View
+                                            </button>
+                                            <button class="btn btn-success"
+                                                    onclick="authorizeGRV(@grv.GRVId)">
+                                                <i class="fas fa-check"></i> Authorize
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                <h4 class="text-success">No Pending GRVs!</h4>
+                <p class="text-muted">All Goods Received Vouchers have been authorized.</p>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#pendingGRVsTable').DataTable({
+                pageLength: 10,
+                order: [[3, 'asc']]
+            });
+        });
+
+        function authorizeGRV(grvId) {
+            if (confirm('Are you sure you want to authorize this GRV?')) {
+                $.post('@Url.Action("AuthorizeGRV", "Manager")', { grvId: grvId })
+                    .done(function (response) {
+                        if (response.success) {
+                            location.reload();
+                        } else {
+                            alert('Error: ' + response.message);
+                        }
+                    })
+                    .fail(function () {
+                        alert('Error authorizing GRV');
+                    });
+            }
+        }
+
+        function viewGRVDetails(grvId) {
+            // This would typically load GRV details via AJAX
+            alert('GRV details for #' + grvId + ' would be displayed here.');
+        }
+    </script>
+}

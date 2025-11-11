@@ -1,0 +1,111 @@
+﻿
+@model IEnumerable<MaziyaInnPubVleis.Models.Order>
+@{
+    ViewData["Title"] = "My Orders";
+    Layout = "_CustomerLayout";
+}
+
+<!-- Hero Section -->
+<section class="customer-hero">
+    <div class="container">
+        <h1 class="display-4 fw-bold text-white mb-3">My Orders 📦</h1>
+        <p class="lead text-white mb-0">Track your order history</p>
+    </div>
+</section>
+
+<div class="container py-5">
+    @if (Model.Any())
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white py-3">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-history me-2"></i>Order History
+                    <span class="badge bg-warning ms-2">@Model.Count() orders</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Order #</th>
+                                <th>Date</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>#@order.OrderId</strong>
+                                    </td>
+                                    <td>@order.OrderDate.ToString("MMM dd, yyyy")</td>
+                                    <td>
+                                        <span class="badge bg-secondary">@order.OrderItems.Count items</span>
+                                    </td>
+                                    <td>
+                                        <strong class="text-success">R @order.TotalAmount.ToString("N2")</strong>
+                                    </td>
+                                    <td>
+                                        @{
+                                            var statusClass = order.Status switch
+                                            {
+                                                MaziyaInnPubVleis.Models.OrderStatus.Pending => "bg-warning",
+                                                MaziyaInnPubVleis.Models.OrderStatus.Approved => "bg-info",
+                                                MaziyaInnPubVleis.Models.OrderStatus.Completed => "bg-success",
+                                                MaziyaInnPubVleis.Models.OrderStatus.Cancelled => "bg-danger",
+                                                MaziyaInnPubVleis.Models.OrderStatus.Refunded => "bg-secondary",
+                                                _ => "bg-secondary"
+                                            };
+                                        }
+                                        <span class="badge @statusClass">
+                                            @order.Status
+                                            @if (order.Status == MaziyaInnPubVleis.Models.OrderStatus.Cancelled && !string.IsNullOrEmpty(order.CancellationReason))
+                                            {
+                                                <i class="fas fa-info-circle ms-1" title="@order.CancellationReason"></i>
+                                            }
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="@Url.Action("OrderDetails", "Customer", new { id = order.OrderId })"
+                                               class="btn btn-outline-primary">
+                                                <i class="fas fa-eye me-1"></i>View
+                                            </a>
+                                            <a href="@Url.Action("OrderReceipt", new { id = order.OrderId })"
+                                               class="btn btn-outline-success" target="_blank">
+                                                <i class="fas fa-receipt me-1"></i>Receipt
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Empty State -->
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body py-5">
+                        <i class="fas fa-receipt fa-4x text-muted mb-4"></i>
+                        <h3 class="text-muted mb-3">No Orders Yet</h3>
+                        <p class="text-muted mb-4">You haven't placed any orders yet.</p>
+                        <a href="@Url.Action("Index", "Customer")" class="btn btn-primary btn-lg">
+                            <i class="fas fa-utensils me-2"></i>Browse Menu
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

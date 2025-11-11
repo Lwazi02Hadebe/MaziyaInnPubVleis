@@ -1,0 +1,145 @@
+﻿@model MaziyaInnPubVleis.Services.EmployeeAttendanceReport
+@{
+    ViewData["Title"] = "Employee Attendance Report";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Employee Attendance Report</h1>
+        <div class="btn-group">
+            <button onclick="window.print()" class="btn btn-outline-primary">
+                <i class="fas fa-print"></i> Print
+            </button>
+            <a href="@Url.Action("Reports", "Manager")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Report Summary -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h6>Reporting Period</h6>
+                    <small>@Model.StartDate.ToString("MMM dd, yyyy") - @Model.EndDate.ToString("MMM dd, yyyy")</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h6>Avg Hours/Employee</h6>
+                    <h4>@Model.AverageHoursWorked.ToString("N1")</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h6>Total Absences</h6>
+                    <h4>@Model.TotalAbsences</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h6>Late Arrivals</h6>
+                    <h4>@Model.TotalLateArrivals</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employee Summaries -->
+    <div class="card">
+        <div class="card-header">
+            <h6 class="m-0 font-weight-bold text-primary">Employee Attendance Summary</h6>
+        </div>
+        <div class="card-body">
+            @foreach (var employee in Model.EmployeeSummaries)
+            {
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <h6 class="m-0 font-weight-bold">
+                            @employee.EmployeeName
+                            <span class="badge badge-secondary float-right">@employee.Role</span>
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <strong>Days Worked:</strong> @employee.DaysWorked / @employee.TotalScheduledDays
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Total Hours:</strong> @employee.TotalHoursWorked.ToString("N1")
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Absences:</strong>
+                                <span class="badge badge-@(employee.Absences > 0 ? "danger" : "success")">
+                                    @employee.Absences
+                                </span>
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Late Arrivals:</strong>
+                                <span class="badge badge-@(employee.LateArrivals > 0 ? "warning" : "success")">
+                                    @employee.LateArrivals
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Attendance Details -->
+                        @if (employee.AttendanceRecords.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Clock In</th>
+                                            <th>Clock Out</th>
+                                            <th>Hours Worked</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var record in employee.AttendanceRecords)
+                                        {
+                                            <tr>
+                                                <td>@record.WorkDate.ToString("MMM dd, yyyy")</td>
+                                                <td>@(record.ClockInTime?.ToString("HH:mm") ?? "N/A")</td>
+                                                <td>@(record.ClockOutTime?.ToString("HH:mm") ?? "N/A")</td>
+                                                <td>
+                                                    @if (record.HoursWorked.HasValue)
+                                                    {
+                                                        <span>@record.HoursWorked.Value.Hours.ToString("00"):@record.HoursWorked.Value.Minutes.ToString("00")</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>N/A</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <span class="badge badge-@(record.Status == "Present" ? "success" :
+                                                                                                                  record.Status == "Late" ? "warning" :
+                                                                                                                  record.Status == "Left Early" ? "info" : "secondary")">
+                                            @record.Status
+                                        </span>
+                                    </td>
+                                </tr>
+                                                                }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted text-center">No attendance records for this period</p>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

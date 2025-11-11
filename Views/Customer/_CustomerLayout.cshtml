@@ -1,0 +1,259 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Maziya Inn Pub & Vleis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="~/css/site.css" rel="stylesheet" />
+    <style>
+        .customer-hero {
+            background: linear-gradient(135deg, rgba(26, 71, 42, 0.9) 0%, rgba(15, 45, 26, 0.9) 100%), url('/images/pub-hero.jpg') center/cover;
+            color: white;
+            padding: 120px 0 80px;
+            position: relative;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border-top: 4px solid var(--secondary);
+            height: 100%;
+        }
+
+            .feature-card:hover {
+                transform: translateY(-10px);
+                box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            }
+
+            .feature-card i {
+                font-size: 3rem;
+                color: var(--secondary);
+                margin-bottom: 20px;
+            }
+
+        .menu-category {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);
+            color: var(--dark);
+            font-weight: 700;
+        }
+    </style>
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="@Url.Action("Index", "Customer")">
+                <i class="fas fa-beer me-2"></i>Maziya Inn Pub & Vleis
+                <small class="d-block fs-6 text-warning">Est. 1995</small>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")"
+                           href="@Url.Action("Index", "Customer")">
+                            <i class="fas fa-home me-1"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Events" ? "active" : "")"
+                           href="@Url.Action("Events", "Customer")">
+                            <i class="fas fa-calendar-alt me-1"></i> Events
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Orders" ? "active" : "")"
+                           href="@Url.Action("Orders", "Customer")">
+                            <i class="fas fa-receipt me-1"></i> My Orders
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "MyBookings" ? "active" : "")"
+                           href="@Url.Action("MyBookings", "Customer")">
+                            <i class="fas fa-ticket-alt me-1"></i> My Bookings
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    @if (Context.Session.GetInt32("CustomerId") != null)
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle me-1"></i> @Context.Session.GetString("CustomerName")
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="@Url.Action("Orders", "Customer")"><i class="fas fa-receipt me-2"></i>My Orders</a></li>
+                                <li><a class="dropdown-item" href="@Url.Action("MyBookings", "Customer")"><i class="fas fa-ticket-alt me-2"></i>My Bookings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="@Url.Action("Logout", "Customer")" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="dropdown-item border-0 bg-transparent">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item position-relative">
+                            <a class="nav-link" href="@Url.Action("Cart", "Customer")">
+                                <i class="fas fa-shopping-cart"></i> Cart
+                                <span id="cartCount" class="badge cart-badge">0</span>
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Login", "Customer")">
+                                <i class="fas fa-sign-in-alt me-1"></i> Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Register", "Customer")">
+                                <i class="fas fa-user-plus me-1"></i> Register
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show m-3" role="alert">
+                <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <h5><i class="fas fa-beer me-2"></i>Maziya Inn Pub & Vleis</h5>
+                    <p class="mt-3">Experience the finest food, premium drinks, and unforgettable entertainment in the heart of the city.</p>
+                    <div class="social-links mt-4">
+                        <a href="#" class="text-light me-3"><i class="fab fa-facebook fa-lg"></i></a>
+                        <a href="#" class="text-light me-3"><i class="fab fa-twitter fa-lg"></i></a>
+                        <a href="#" class="text-light me-3"><i class="fab fa-instagram fa-lg"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="@Url.Action("Index", "Customer")">Home</a></li>
+                        <li><a href="@Url.Action("Events", "Customer")">Events</a></li>
+                        <li><a href="@Url.Action("Orders", "Customer")">My Orders</a></li>
+                        <li><a href="@Url.Action("MyBookings", "Customer")">My Bookings</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <h5>Visit Us</h5>
+                    <p><i class="fas fa-clock me-2"></i> Mon-Sun: 11:00 AM - 2:00 AM</p>
+                    <p><i class="fas fa-phone me-2"></i> (011) 555-1234</p>
+                    <p><i class="fas fa-envelope me-2"></i> reservations@maziyainn.co.za</p>
+                    <p><i class="fas fa-map-marker-alt me-2"></i> 123 Main Street<br>Johannesburg, 2000</p>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="text-center">
+                <p>&copy; 2025 Maziya Inn Pub & Vleis. All rights reserved. | Crafted with <i class="fas fa-heart text-danger"></i></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Update cart count
+        function updateCartCount() {
+            $.get('@Url.Action("GetCartCount", "Customer")', function(data) {
+                $('#cartCount').text(data.count);
+            });
+        }
+
+        // Add to cart function
+        function addToCart(productId, quantity = 1) {
+            console.log('Adding to cart:', productId, quantity);
+
+            // Get anti-forgery token
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            $.post('@Url.Action("AddToCart", "Customer")', {
+                productId: productId,
+                quantity: quantity,
+                __RequestVerificationToken: token
+            })
+            .done(function(response) {
+                if (response.success) {
+                    updateCartCount();
+                    showNotification('Product added to cart!', 'success');
+                } else {
+                    showNotification('Error: ' + response.message, 'error');
+                }
+            })
+            .fail(function(xhr, status, error) {
+                console.error('AJAX Error:', status, error);
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    showNotification('Error: ' + xhr.responseJSON.message, 'error');
+                } else {
+                    showNotification('Error adding product to cart. Please try again.', 'error');
+                }
+            });
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const notification = $(`<div class="alert ${alertClass} alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 9999;">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} me-2"></i>${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>`);
+
+            $('body').append(notification);
+            setTimeout(() => notification.alert('close'), 5000);
+        }
+
+        // Initialize cart count on page load
+        $(document).ready(function() {
+            updateCartCount();
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

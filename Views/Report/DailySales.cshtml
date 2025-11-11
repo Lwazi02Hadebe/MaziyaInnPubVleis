@@ -1,0 +1,236 @@
+﻿@model MaziyaInnPubVleis.Services.SalesReport
+@{
+    ViewData["Title"] = "Daily Sales Report";
+    var today = DateTime.Today;
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Daily Sales Report - @today.ToString("dd MMMM yyyy")</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="@Url.Action("Sales")" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Reports
+        </a>
+        <button class="btn btn-sm btn-outline-primary ms-2" onclick="window.print()">
+            <i class="fas fa-print"></i> Print Report
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">R @Model.TotalSales.ToString("N2")</h4>
+                        <p class="card-text">Total Sales</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-money-bill-wave fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@Model.TotalOrders</h4>
+                        <p class="card-text">Total Orders</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-shopping-cart fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">R @Model.TotalGrossProfit.ToString("N2")</h4>
+                        <p class="card-text">Gross Profit</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@Model.AverageProfitMargin.ToString("N1")%</h4>
+                        <p class="card-text">Avg Profit Margin</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-percentage fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Sales Summary</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-6">Report Date:</dt>
+                    <dd class="col-sm-6">@today.ToString("dd MMMM yyyy")</dd>
+
+                    <dt class="col-sm-6">Total Sales (excl. VAT):</dt>
+                    <dd class="col-sm-6">R @((Model.TotalSales - Model.TotalVAT).ToString("N2"))</dd>
+
+                    <dt class="col-sm-6">VAT Amount (15%):</dt>
+                    <dd class="col-sm-6">R @Model.TotalVAT.ToString("N2")</dd>
+
+                    <dt class="col-sm-6">Total Sales (incl. VAT):</dt>
+                    <dd class="col-sm-6"><strong>R @Model.TotalSales.ToString("N2")</strong></dd>
+
+                    <dt class="col-sm-6">Gross Profit:</dt>
+                    <dd class="col-sm-6"><strong class="text-success">R @Model.TotalGrossProfit.ToString("N2")</strong></dd>
+
+                    <dt class="col-sm-6">Average Profit Margin:</dt>
+                    <dd class="col-sm-6"><strong class="text-success">@Model.AverageProfitMargin.ToString("N2")%</strong></dd>
+
+                    <dt class="col-sm-6">Number of Orders:</dt>
+                    <dd class="col-sm-6">@Model.TotalOrders</dd>
+
+                    <dt class="col-sm-6">Average Order Value:</dt>
+                    <dd class="col-sm-6">
+                        R @(Model.TotalOrders > 0 ? (Model.TotalSales / Model.TotalOrders).ToString("N2") : "0.00")
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Performance Metrics</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Sales Performance</label>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-success" role="progressbar"
+                             style="width: @(Math.Min(Model.AverageProfitMargin, 100))%;"
+                             aria-valuenow="@Model.AverageProfitMargin" aria-valuemin="0" aria-valuemax="100">
+                            @Model.AverageProfitMargin.ToString("N1")% Margin
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Order Volume</label>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-shopping-cart text-primary me-2"></i>
+                        <span>@Model.TotalOrders orders processed today</span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Revenue Generation</label>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-money-bill-wave text-success me-2"></i>
+                        <span>R @Model.TotalSales.ToString("N2") total revenue</span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Profitability</label>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-chart-line text-warning me-2"></i>
+                        <span>R @Model.TotalGrossProfit.ToString("N2") gross profit</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.Orders.Any())
+{
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Today's Orders</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Time</th>
+                                    <th>Customer</th>
+                                    <th>Status</th>
+                                    <th>Items</th>
+                                    <th>Total Amount</th>
+                                    <th>Profit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var order in Model.Orders)
+                                {
+                                    <tr>
+                                        <td>#@order.OrderId</td>
+                                        <td>@order.OrderDate.ToString("HH:mm")</td>
+                                        <td>@(order.Customer?.Name ?? "Walk-in")</td>
+                                        <td>
+                                            <span class="badge bg-success">Completed</span>
+                                        </td>
+                                        <td>@order.OrderItems.Count</td>
+                                        <td>R @order.TotalAmount.ToString("N2")</td>
+                                        <td class="text-success">R @order.GrossProfit.ToString("N2")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-dark">
+                                    <td colspan="5"><strong>Totals</strong></td>
+                                    <td><strong>R @Model.TotalSales.ToString("N2")</strong></td>
+                                    <td><strong class="text-success">R @Model.TotalGrossProfit.ToString("N2")</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                    <h4>No Sales Data for Today</h4>
+                    <p class="text-muted">There are no completed orders for today.</p>
+                    <a href="@Url.Action("Create", "Order")" class="btn btn-primary">
+                        <i class="fas fa-cash-register"></i> Process First Sale
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+}

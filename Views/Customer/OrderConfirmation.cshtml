@@ -1,0 +1,145 @@
+﻿
+@model MaziyaInnPubVleis.Models.Order
+@{
+    ViewData["Title"] = "Order Confirmation";
+    Layout = "_CustomerLayout";
+}
+
+<!-- Hero Section -->
+<section class="customer-hero bg-success">
+    <div class="container text-center">
+        <i class="fas fa-check-circle fa-4x text-white mb-3"></i>
+        <h1 class="display-4 fw-bold text-white mb-3">Order Confirmed! 🎉</h1>
+        <p class="lead text-white mb-0">Thank you for your order</p>
+    </div>
+</section>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Success Alert -->
+            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>Order Successful!</strong> Your order has been placed and is being processed.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- Order Details Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-receipt me-2"></i>Order Details - #@Model.OrderId
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Order Information</h6>
+                            <p class="mb-1"><strong>Order ID:</strong> #@Model.OrderId</p>
+                            <p class="mb-1"><strong>Order Date:</strong> @Model.OrderDate.ToString("f")</p>
+                            <p class="mb-1"><strong>Status:</strong> <span class="badge bg-warning">@Model.Status</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Payment Summary</h6>
+                            <p class="mb-1"><strong>Subtotal:</strong> R @((Model.TotalAmount - Model.VATAmount).ToString("N2"))</p>
+                            <p class="mb-1"><strong>VAT (15%):</strong> R @Model.VATAmount.ToString("N2")</p>
+                            <p class="mb-0"><strong>Total:</strong> <span class="h5 text-success">R @Model.TotalAmount.ToString("N2")</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Order Items -->
+                    <h6>Order Items</h6>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.OrderItems)
+                                {
+                                    <tr>
+                                        <td>@item.Inventory.ProductName</td>
+                                        <td>@item.Quantity</td>
+                                        <td>R @item.UnitPrice.ToString("N2")</td>
+                                        <td><strong>R @item.TotalPrice.ToString("N2")</strong></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Receipt Download Section -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-info text-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-download me-2"></i>Download Your Receipt
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="mb-4">Keep your receipt as proof of purchase. You can download or print it anytime.</p>
+                    <div class="btn-group" role="group">
+                        <a href="@Url.Action("OrderReceipt", new { id = Model.OrderId })" 
+                           class="btn btn-primary btn-lg" target="_blank">
+                            <i class="fas fa-print me-2"></i>Print Receipt
+                        </a>
+                        <a href="@Url.Action("DownloadOrderReceipt", new { id = Model.OrderId })" 
+                           class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-download me-2"></i>Download PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-warning text-dark py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>What's Next?
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4 mb-3">
+                            <div class="icon-circle bg-primary text-white mx-auto mb-3">
+                                <i class="fas fa-utensils"></i>
+                            </div>
+                            <h6>Order Prepared</h6>
+                            <p class="small text-muted">Our kitchen is preparing your order</p>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="icon-circle bg-warning text-dark mx-auto mb-3">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <h6>Ready for Pickup</h6>
+                            <p class="small text-muted">We'll notify you when it's ready</p>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="icon-circle bg-success text-white mx-auto mb-3">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <h6>Enjoy!</h6>
+                            <p class="small text-muted">Pick up and enjoy your meal</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="text-center mt-4">
+                <a href="@Url.Action("Orders", "Customer")" class="btn btn-primary btn-lg me-3">
+                    <i class="fas fa-list me-2"></i>View All Orders
+                </a>
+                <a href="@Url.Action("Index", "Customer")" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-utensils me-2"></i>Order Again
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

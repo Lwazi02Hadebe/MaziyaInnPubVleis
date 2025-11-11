@@ -1,0 +1,130 @@
+﻿@model List<MaziyaInnPubVleis.Models.Inventory>
+@{
+    ViewData["Title"] = "Stock Management";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Stock Management</h1>
+        <div class="btn-group">
+            <a href="@Url.Action("LowStockAlerts", "Manager")" class="btn btn-outline-danger">
+                <i class="fas fa-exclamation-triangle"></i> Low Stock Alerts
+            </a>
+            <a href="@Url.Action("Create", "Inventory")" class="btn btn-outline-success">
+                <i class="fas fa-plus"></i> Add Product
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center py-3">
+                    <h6>Total Products</h6>
+                    <h4>@Model.Count</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center py-3">
+                    <h6>Active Products</h6>
+                    <h4>@Model.Count(i => i.IsActive)</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center py-3">
+                    <h6>Six-Pack Items</h6>
+                    <h4>@Model.Count(i => i.IsSixPack)</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center py-3">
+                    <h6>Low Stock Items</h6>
+                    <h4>@Model.Count(i => i.StockLevel <= i.MinimumStockLevel)</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Table -->
+    <div class="card">
+        <div class="card-header">
+            <h6 class="m-0 font-weight-bold text-primary">Inventory Overview</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="stockTable">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Product</th>
+                            <th>Description</th>
+                            <th>Stock Level</th>
+                            <th>Min Level</th>
+                            <th>Unit Price</th>
+                            <th>Cost Price</th>
+                            <th>Supplier</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr class="@(item.StockLevel <= item.MinimumStockLevel ? "table-warning" : "")">
+                                <td>@item.ProductName</td>
+                                <td>@item.Description</td>
+                                <td>
+                                    <span class="badge badge-@item.StockStatusClass">@item.StockLevel</span>
+                                </td>
+                                <td>@item.MinimumStockLevel</td>
+                                <td>R @item.UnitPrice.ToString("N2")</td>
+                                <td>R @item.CostPrice.ToString("N2")</td>
+                                <td>@item.Supplier?.Name</td>
+                                <td>
+                                    <span class="badge badge-@(item.IsSixPack ? "info" : "secondary")">
+                                        @(item.IsSixPack ? "Six-Pack" : "Single Unit")
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-@(item.IsActive ? "success" : "danger")">
+                                        @(item.IsActive ? "Active" : "Inactive")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="@Url.Action("Edit", "Inventory", new { id = item.ProductId })"
+                                           class="btn btn-outline-primary" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="@Url.Action("Details", "Inventory", new { id = item.ProductId })"
+                                           class="btn btn-outline-info" title="Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#stockTable').DataTable({
+                pageLength: 25,
+                order: [[2, 'asc']]
+            });
+        });
+    </script>
+}

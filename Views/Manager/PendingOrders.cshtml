@@ -1,0 +1,174 @@
+﻿@model List<MaziyaInnPubVleis.Models.Order>
+@{
+    ViewData["Title"] = "Pending Orders";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 text-warning">
+            <i class="fas fa-clipboard-list"></i> Pending Orders
+        </h1>
+        <div class="btn-group">
+            <a href="@Url.Action("Dashboard", "Manager")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="alert alert-warning">
+            <h6><i class="fas fa-clock"></i> Authorization Required</h6>
+            <p class="mb-0">You have <strong>@Model.Count</strong> order(s) pending approval. Please review and authorize them.</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-warning text-white">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-list"></i> Orders Pending Approval
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover" id="pendingOrdersTable">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Order Date</th>
+                                <th>Items</th>
+                                <th>Total Amount</th>
+                                <th>Processed By</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>#@order.OrderId</strong>
+                                    </td>
+                                    <td>@order.Customer?.Name</td>
+                                    <td>@order.OrderDate.ToString("MMM dd, yyyy HH:mm")</td>
+                                    <td>
+                                        <small>
+                                            @order.OrderItems.Count item(s)
+                                            <button class="btn btn-sm btn-outline-info ml-2"
+                                                    onclick="viewOrderItems(@order.OrderId)">
+                                                View Items
+                                            </button>
+                                        </small>
+                                    </td>
+                                    <td>R @order.TotalAmount.ToString("N2")</td>
+                                    <td>@order.ProcessedBy?.Username</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-success"
+                                                    onclick="approveOrder(@order.OrderId)">
+                                                <i class="fas fa-check"></i> Approve
+                                            </button>
+                                            <button class="btn btn-danger"
+                                                    onclick="rejectOrder(@order.OrderId)">
+                                                <i class="fas fa-times"></i> Reject
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                <h4 class="text-success">No Pending Orders!</h4>
+                <p class="text-muted">All orders have been processed and authorized.</p>
+                <a href="@Url.Action("Index", "Order")" class="btn btn-primary">
+                    <i class="fas fa-list"></i> View All Orders
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Order Items Modal -->
+<div class="modal fade" id="orderItemsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Order Items</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="orderItemsContent">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#pendingOrdersTable').DataTable({
+                pageLength: 10,
+                order: [[2, 'asc']]
+            });
+        });
+
+        function approveOrder(orderId) {
+            if (confirm('Are you sure you want to approve this order?')) {
+                $.post('@Url.Action("ApproveOrder", "Manager")', { orderId: orderId })
+                    .done(function (response) {
+                        if (response.success) {
+                            location.reload();
+                        } else {
+                            alert('Error: ' + response.message);
+                        }
+                    })
+                    .fail(function () {
+                        alert('Error approving order');
+                    });
+            }
+        }
+
+        function rejectOrder(orderId) {
+            const reason = prompt('Please enter reason for rejection:');
+            if (reason) {
+                $.post('@Url.Action("RejectOrder", "Manager")', {
+                    orderId: orderId,
+                    reason: reason
+                })
+                .done(function (response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                })
+                .fail(function () {
+                    alert('Error rejecting order');
+                });
+            }
+        }
+
+        function viewOrderItems(orderId) {
+            // This would typically load order items via AJAX
+            // For now, we'll show a simple message
+            $('#orderItemsContent').html(`
+                <div class="text-center">
+                    <p>Loading order items...</p>
+                    <p><small>In a real implementation, this would load the actual order items via AJAX</small></p>
+                </div>
+            `);
+            $('#orderItemsModal').modal('show');
+        }
+    </script>
+}

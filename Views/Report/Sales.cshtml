@@ -1,0 +1,91 @@
+﻿@{
+    ViewData["Title"] = "Sales Reports";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Sales Reports</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Generate Sales Report</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" asp-action="SalesReport">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="startDate" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="startDate" name="startDate"
+                                       value="@ViewBag.StartDate" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="endDate" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="endDate" name="endDate"
+                                       value="@ViewBag.EndDate" required>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-chart-bar"></i> Generate Report
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Quick Reports</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <a href="@Url.Action("DailySales")" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-calendar-day"></i><br>
+                            Daily Sales
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="@Url.Action("SalesReport", new { startDate = DateTime.Today.AddDays(-7), endDate = DateTime.Today })"
+                           class="btn btn-outline-success w-100">
+                            <i class="fas fa-calendar-week"></i><br>
+                            Weekly Sales
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="@Url.Action("SalesReport", new { startDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1), endDate = DateTime.Today })"
+                           class="btn btn-outline-info w-100">
+                            <i class="fas fa-calendar-alt"></i><br>
+                            Monthly Sales
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Report Types</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="@Url.Action("Sales")" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-chart-line"></i> Sales Reports
+                    </a>
+                    <a href="@Url.Action("Inventory")" class="list-group-item list-group-item-action">
+                        <i class="fas fa-boxes"></i> Inventory Reports
+                    </a>
+                    <a href="@Url.Action("DailySales")" class="list-group-item list-group-item-action">
+                        <i class="fas fa-calendar-day"></i> Daily Sales Report
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

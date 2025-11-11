@@ -1,0 +1,157 @@
+﻿@model MaziyaInnPubVleis.Services.SalesReport
+@{
+    ViewData["Title"] = "Sales Report";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Sales Report</h1>
+        <div class="btn-group">
+            <button onclick="window.print()" class="btn btn-outline-primary">
+                <i class="fas fa-print"></i> Print
+            </button>
+            <a href="@Url.Action("Reports", "Manager")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Report Header -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h6 class="m-0 font-weight-bold">Sales Report Summary</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Period:</strong><br>
+                    @Model.StartDate.ToString("MMM dd, yyyy") - @Model.EndDate.ToString("MMM dd, yyyy")
+                </div>
+                <div class="col-md-3">
+                    <strong>Total Orders:</strong><br>
+                    @Model.TotalOrders
+                </div>
+                <div class="col-md-3">
+                    <strong>Total Sales:</strong><br>
+                    R @Model.TotalSales.ToString("N2")
+                </div>
+                <div class="col-md-3">
+                    <strong>Average Profit Margin:</strong><br>
+                    @Model.AverageProfitMargin.ToString("N1")%
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Summary -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h6>Total Revenue</h6>
+                    <h4>R @Model.TotalSales.ToString("N2")</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h6>Total VAT</h6>
+                    <h4>R @Model.TotalVAT.ToString("N2")</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h6>Gross Profit</h6>
+                    <h4>R @Model.TotalGrossProfit.ToString("N2")</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h6>Profit Margin</h6>
+                    <h4>@Model.AverageProfitMargin.ToString("N1")%</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Selling Products -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h6 class="m-0 font-weight-bold text-primary">Top Selling Products</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Product</th>
+                            <th>Quantity Sold</th>
+                            <th>Actual Units</th>
+                            <th>Total Revenue</th>
+                            <th>Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var product in Model.TopSellingProducts)
+                        {
+                            <tr>
+                                <td>@product.ProductName</td>
+                                <td>@product.TotalQuantity</td>
+                                <td>@product.ActualUnitsSold</td>
+                                <td>R @product.TotalRevenue.ToString("N2")</td>
+                                <td>
+                                    <span class="badge badge-@(product.IsSixPack ? "info" : "success")">
+                                        @(product.IsSixPack ? "Six-Pack" : "Single Unit")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="card">
+        <div class="card-header">
+            <h6 class="m-0 font-weight-bold text-primary">Recent Orders</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Amount</th>
+                            <th>Profit</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Model.Orders)
+                        {
+                            <tr>
+                                <td>#@order.OrderId</td>
+                                <td>@order.OrderDate.ToString("MMM dd, yyyy HH:mm")</td>
+                                <td>@order.Customer?.Name</td>
+                                <td>R @order.TotalAmount.ToString("N2")</td>
+                                <td>R @order.GrossProfit.ToString("N2")</td>
+                                <td>
+                                    <span class="badge badge-success">@order.Status</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,223 @@
+﻿@model IEnumerable<MaziyaInnPubVleis.Models.Event>
+@{
+    ViewData["Title"] = "Upcoming Events";
+    Layout = "_CustomerLayout";
+}
+
+<!-- Hero Section -->
+<section class="customer-hero">
+    <div class="container">
+        <h1 class="display-4 fw-bold text-white mb-3">Upcoming Events 🎭</h1>
+        <p class="lead text-white mb-0">Join us for unforgettable experiences</p>
+    </div>
+</section>
+
+<div class="container py-5">
+    @if (Model.Any())
+    {
+        <div class="row">
+            @foreach (var eventItem in Model)
+            {
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100 border-0 shadow-sm" data-event-id="@eventItem.EventId" data-price="@eventItem.TicketPrice">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title">@eventItem.EventName</h5>
+                                <span class="badge bg-primary">R @eventItem.TicketPrice.ToString("N2")</span>
+                            </div>
+                            <p class="card-text text-muted mb-4">@eventItem.Description</p>
+
+                            <div class="event-details">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-calendar text-primary me-3"></i>
+                                    <div>
+                                        <strong>Date:</strong> @eventItem.EventDate.ToString("dddd, MMMM dd, yyyy")
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-clock text-primary me-3"></i>
+                                    <div>
+                                        <strong>Time:</strong> @eventItem.EventDate.ToString("hh:mm tt") - @eventItem.EndDate.ToString("hh:mm tt")
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-users text-primary me-3"></i>
+                                    <div>
+                                        <strong>Availability:</strong>
+                                        <span class="@(eventItem.MaxAttendees - eventItem.CurrentAttendees <= 10 ? "text-warning" : "text-success")">
+                                            @(eventItem.MaxAttendees - eventItem.CurrentAttendees) of @eventItem.MaxAttendees spots available
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-user text-primary me-3"></i>
+                                    <div>
+                                        <strong>Organizer:</strong> @eventItem.CreatedBy?.Username
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-top-0 pt-0">
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <a href="@Url.Action("EventDetails", "Customer", new { id = eventItem.EventId })"
+                                       class="btn btn-outline-primary w-100">
+                                        <i class="fas fa-info-circle me-2"></i>Details
+                                    </a>
+                                </div>
+                                <div class="col-md-6">
+                                    @if (eventItem.MaxAttendees - eventItem.CurrentAttendees > 0)
+                                    {
+                                        <button class="btn btn-primary w-100 book-event-btn"
+                                                data-event-id="@eventItem.EventId"
+                                                data-event-name="@eventItem.EventName"
+                                                data-event-price="@eventItem.TicketPrice">
+                                            <i class="fas fa-ticket-alt me-2"></i>Book Now
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-secondary w-100" disabled>
+                                            <i class="fas fa-times me-2"></i>Sold Out
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <!-- Empty State -->
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body py-5">
+                        <i class="fas fa-calendar-times fa-4x text-muted mb-4"></i>
+                        <h3 class="text-muted mb-3">No Upcoming Events</h3>
+                        <p class="text-muted mb-4">Check back later for exciting events and entertainment.</p>
+                        <a href="@Url.Action("Index", "Customer")" class="btn btn-primary">
+                            <i class="fas fa-home me-2"></i>Back to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Booking Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Book Event: <span id="eventName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="ticketQuantity" class="form-label">Number of Tickets</label>
+                    <input type="number" class="form-control" id="ticketQuantity" min="1" max="10" value="1">
+                    <div class="form-text">Maximum 10 tickets per booking</div>
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <span id="ticketPriceInfo">Ticket price: R 0.00 each</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmBooking">Confirm Booking</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentEventId = 0;
+        let currentEventPrice = 0;
+        let currentEventName = '';
+
+        // Event delegation for book event buttons
+        $(document).on('click', '.book-event-btn', function() {
+            currentEventId = $(this).data('event-id');
+            currentEventName = $(this).data('event-name');
+            currentEventPrice = parseFloat($(this).data('event-price'));
+
+            document.getElementById('eventName').textContent = currentEventName;
+            document.getElementById('ticketPriceInfo').textContent = `Ticket price: R ${currentEventPrice.toFixed(2)} each`;
+            document.getElementById('ticketQuantity').value = 1;
+
+            const modal = new bootstrap.Modal(document.getElementById('bookingModal'));
+            modal.show();
+        });
+
+        document.getElementById('confirmBooking').addEventListener('click', function() {
+            const quantity = parseInt(document.getElementById('ticketQuantity').value);
+
+            if (quantity < 1 || quantity > 10) {
+                alert('Please enter a valid number of tickets (1-10)');
+                return;
+            }
+
+            // Show loading state
+            const button = this;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+            button.disabled = true;
+
+            // Get anti-forgery token
+            const token = $('input[name="__RequestVerificationToken"]').val();
+
+            // Make AJAX request to book event
+            $.post('@Url.Action("BookEvent", "Customer")', {
+                eventId: currentEventId,
+                numberOfTickets: quantity,
+                __RequestVerificationToken: token
+            }).done(function(response) {
+                console.log('Booking response:', response);
+                if (response.success) {
+                    showNotification('Event booked successfully! Booking ID: ' + response.bookingId, 'success');
+                    $('#bookingModal').modal('hide');
+
+                    // Reload page to update availability
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showNotification('Error: ' + response.message, 'error');
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                }
+            }).fail(function(xhr, status, error) {
+                console.error('Booking error:', xhr.responseText);
+                showNotification('Error booking event. Please try again.', 'error');
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
+        });
+
+        // Update ticket price when quantity changes
+        document.getElementById('ticketQuantity').addEventListener('change', function() {
+            const quantity = parseInt(this.value);
+            const totalPrice = currentEventPrice * quantity;
+            document.getElementById('ticketPriceInfo').textContent =
+                `Ticket price: R ${currentEventPrice.toFixed(2)} each (Total: R ${totalPrice.toFixed(2)})`;
+        });
+
+        function showNotification(message, type) {
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const notification = $(`<div class="alert ${alertClass} alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 9999;">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} me-2"></i>${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>`);
+
+            $('body').append(notification);
+            setTimeout(() => notification.alert('close'), 5000);
+        }
+    </script>
+}

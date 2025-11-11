@@ -1,0 +1,398 @@
+﻿@model MaziyaInnPubVleis.Models.Event
+@{
+    ViewData["Title"] = "Event Details";
+    Layout = "_CustomerLayout";
+}
+
+<!-- Hero Section -->
+<section class="customer-hero">
+    <div class="container">
+        <h1 class="display-4 fw-bold text-white mb-3">Event Details 🎟️</h1>
+        <p class="lead text-white mb-0">Get ready for an unforgettable experience</p>
+    </div>
+</section>
+
+<div class="container py-5">
+    <div class="row">
+        <!-- Event Details -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <h2 class="card-title">@Model.EventName</h2>
+                        <div class="text-end">
+                            <div class="h4 text-primary mb-2">R @Model.TicketPrice.ToString("N2")</div>
+                            <span class="badge bg-@(Model.Status == MaziyaInnPubVleis.Models.EventStatus.Scheduled ? "success" :
+                                                                                  Model.Status == MaziyaInnPubVleis.Models.EventStatus.Ongoing ? "warning" :
+                                                                                  Model.Status == MaziyaInnPubVleis.Models.EventStatus.Completed ? "secondary" : "danger")">
+                                @Model.Status
+                            </span>
+                        </div>
+                    </div>
+
+                    <p class="card-text lead text-muted mb-4">@Model.Description</p>
+
+                    <div class="event-info-grid">
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-calendar-alt text-primary"></i>
+                            </div>
+                            <div class="info-content">
+                                <strong>Date</strong>
+                                <p class="mb-0">@Model.EventDate.ToString("dddd, MMMM dd, yyyy")</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-clock text-primary"></i>
+                            </div>
+                            <div class="info-content">
+                                <strong>Time</strong>
+                                <p class="mb-0">@Model.EventDate.ToString("hh:mm tt") - @Model.EndDate.ToString("hh:mm tt")</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-users text-primary"></i>
+                            </div>
+                            <div class="info-content">
+                                <strong>Availability</strong>
+                                <p class="mb-0 @(Model.MaxAttendees - Model.CurrentAttendees <= 10 ? "text-warning" : "text-success")">
+                                    @(Model.MaxAttendees - Model.CurrentAttendees) of @Model.MaxAttendees spots available
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-user text-primary"></i>
+                            </div>
+                            <div class="info-content">
+                                <strong>Organizer</strong>
+                                <p class="mb-0">@Model.CreatedBy?.Username</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Description) && Model.Description.Length > 200)
+                    {
+                        <div class="mt-4">
+                            <h5>About This Event</h5>
+                            <p class="text-muted">@Model.Description</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Event Guidelines -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2 text-primary"></i>Event Guidelines
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Please arrive 15 minutes before the event starts
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Bring your booking confirmation (digital or printed)
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Food and drinks available for purchase on-site
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Free parking available for all attendees
+                        </li>
+                        <li class="mb-0">
+                            <i class="fas fa-check text-success me-2"></i>
+                            For inquiries, call (011) 555-1234
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Section -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-ticket-alt me-2"></i>Book Your Spot
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Status == MaziyaInnPubVleis.Models.EventStatus.Scheduled && Model.MaxAttendees - Model.CurrentAttendees > 0)
+                    {
+                        <div class="mb-4">
+                            <label for="ticketQuantity" class="form-label fw-bold">Number of Tickets</label>
+                            <div class="input-group">
+                                <button class="btn btn-outline-secondary" type="button" id="decreaseTickets">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <input type="number" class="form-control text-center" id="ticketQuantity"
+                                       value="1" min="1" max="10" maxlength="2">
+                                <button class="btn btn-outline-secondary" type="button" id="increaseTickets">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div class="form-text text-end">
+                                Max 10 tickets per booking
+                            </div>
+                        </div>
+
+                        <div class="booking-summary mb-4 p-3 bg-light rounded">
+                            <h6 class="mb-3">Booking Summary</h6>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Tickets (<span id="summaryQuantity">1</span>x):</span>
+                                <strong id="summaryPrice">R @Model.TicketPrice.ToString("N2")</strong>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between">
+                                <strong>Total:</strong>
+                                <strong class="text-success h5" id="summaryTotal">R @Model.TicketPrice.ToString("N2")</strong>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button class="btn btn-success btn-lg" id="bookNowBtn">
+                                <i class="fas fa-ticket-alt me-2"></i>Book Now
+                            </button>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-lock me-1"></i>Secure booking process
+                            </small>
+                        </div>
+                    }
+                    else if (Model.Status != MaziyaInnPubVleis.Models.EventStatus.Scheduled)
+                    {
+                        <div class="alert alert-warning text-center">
+                            <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                            <h6>Event Not Available</h6>
+                            <p class="mb-0">This event is no longer available for booking.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger text-center">
+                            <i class="fas fa-times-circle fa-2x mb-3"></i>
+                            <h6>Sold Out</h6>
+                            <p class="mb-0">This event is completely booked. Check back for future events!</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-body text-center">
+                    <i class="fas fa-headset fa-2x text-primary mb-3"></i>
+                    <h6>Need Help?</h6>
+                    <p class="small text-muted mb-2">Our team is here to assist you</p>
+                    <div class="d-grid gap-2">
+                        <a href="tel:0115551234" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-phone me-2"></i>(011) 555-1234
+                        </a>
+                        <a href="mailto:events@maziyainn.co.za" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-envelope me-2"></i>Email Us
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Events (if any) -->
+    @if (ViewBag.RelatedEvents != null && ((IEnumerable<MaziyaInnPubVleis.Models.Event>)ViewBag.RelatedEvents).Any())
+    {
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-calendar me-2 text-primary"></i>Other Events You Might Like
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            @foreach (var relatedEvent in ViewBag.RelatedEvents)
+                            {
+                                <div class="col-md-4 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">@relatedEvent.EventName</h6>
+                                            <p class="card-text small text-muted">@relatedEvent.Description.Truncate(60)</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">@relatedEvent.EventDate.ToString("MMM dd")</small>
+                                                <span class="badge bg-primary">R @relatedEvent.TicketPrice.ToString("N2")</span>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer bg-transparent">
+                                            <a href="@Url.Action("EventDetails", new { id = relatedEvent.EventId })"
+                                               class="btn btn-outline-primary btn-sm w-100">
+                                                View Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .event-info-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+
+    .info-icon {
+        width: 50px;
+        height: 50px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.2rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .info-content {
+        flex: 1;
+    }
+
+    .sticky-top {
+        position: sticky;
+        z-index: 100;
+    }
+
+    .booking-summary {
+        border-left: 4px solid var(--primary);
+    }
+
+    .input-group button {
+        width: 45px;
+    }
+
+    #ticketQuantity {
+        font-weight: bold;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        const ticketPrice = @Model.TicketPrice;
+        let ticketQuantity = 1;
+
+        // Update ticket quantity
+        document.getElementById('increaseTickets').addEventListener('click', function() {
+            if (ticketQuantity < 10) {
+                ticketQuantity++;
+                updateBookingSummary();
+            }
+        });
+
+        document.getElementById('decreaseTickets').addEventListener('click', function() {
+            if (ticketQuantity > 1) {
+                ticketQuantity--;
+                updateBookingSummary();
+            }
+        });
+
+        document.getElementById('ticketQuantity').addEventListener('change', function() {
+            const value = parseInt(this.value);
+            if (value >= 1 && value <= 10) {
+                ticketQuantity = value;
+                updateBookingSummary();
+            } else {
+                this.value = ticketQuantity;
+            }
+        });
+
+        function updateBookingSummary() {
+            document.getElementById('ticketQuantity').value = ticketQuantity;
+            document.getElementById('summaryQuantity').textContent = ticketQuantity;
+
+            const totalPrice = ticketPrice * ticketQuantity;
+            document.getElementById('summaryPrice').textContent = 'R ' + (ticketPrice * ticketQuantity).toFixed(2);
+            document.getElementById('summaryTotal').textContent = 'R ' + totalPrice.toFixed(2);
+        }
+
+        // Book now functionality
+        document.getElementById('bookNowBtn').addEventListener('click', function() {
+            const button = this;
+            const originalText = button.innerHTML;
+
+            // Show loading state
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+            button.disabled = true;
+
+            // Get anti-forgery token
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            // Make AJAX request
+            $.post('@Url.Action("BookEvent", "Customer")', {
+                eventId: @Model.EventId,
+                numberOfTickets: ticketQuantity,
+                __RequestVerificationToken: token
+            }).done(function(response) {
+                if (response.success) {
+                    showNotification('Success! Your booking has been confirmed. Booking ID: ' + response.bookingId, 'success');
+
+                    // Redirect to bookings page after delay
+                    setTimeout(() => {
+                        window.location.href = '@Url.Action("MyBookings", "Customer")';
+                    }, 2000);
+                } else {
+                    showNotification('Error: ' + response.message, 'error');
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                }
+            }).fail(function(xhr, status, error) {
+                showNotification('Error booking event. Please try again.', 'error');
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
+        });
+
+        function showNotification(message, type) {
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+
+            const notification = $(`<div class="alert ${alertClass} alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 9999;">
+                <i class="fas ${iconClass} me-2"></i>${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>`);
+
+            $('body').append(notification);
+            setTimeout(() => notification.alert('close'), 5000);
+        }
+
+        // Initialize booking summary
+        updateBookingSummary();
+    </script>
+}

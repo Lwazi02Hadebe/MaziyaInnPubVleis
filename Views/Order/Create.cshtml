@@ -1,0 +1,205 @@
+﻿@model MaziyaInnPubVleis.Models.Order
+@{
+    ViewData["Title"] = "Point of Sale";
+    var inventory = ViewBag.Inventory as IEnumerable<MaziyaInnPubVleis.Models.Inventory>;
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Point of Sale</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="@Url.Action("Index")" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Orders
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Available Products</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @foreach (var product in inventory)
+                    {
+                        <div class="col-md-4 mb-3">
+                            <div class="card product-card" data-product-id="@product.ProductId"
+                                 data-product-name="@product.ProductName"
+                                 data-price="@product.UnitPrice"
+                                 data-is-sixpack="@product.IsSixPack">
+                                <div class="card-body">
+                                    <h6 class="card-title">@product.ProductName</h6>
+                                    <p class="card-text text-muted small">@product.Description</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold text-primary">R @product.UnitPrice.ToString("N2")</span>
+                                        <span class="badge bg-@(product.StockLevel > 0 ? "success" : "danger")">
+                                            Stock: @product.StockLevel
+                                        </span>
+                                    </div>
+                                    @if (product.IsSixPack)
+                                    {
+                                        <small class="text-info"><i class="fas fa-box"></i> Six-Pack Item</small>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Current Order</h5>
+            </div>
+            <div class="card-body">
+                <form id="orderForm" method="post" asp-action="Create">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="CustomerId" class="form-label">Customer (Optional)</label>
+                        <input asp-for="CustomerId" class="form-control" placeholder="Customer ID" />
+                        <span asp-validation-for="CustomerId" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Processed By User ID</label>
+                        <input asp-for="ProcessedByUserId" class="form-control" value="3" readonly />
+                        <span asp-validation-for="ProcessedByUserId" class="text-danger"></span>
+                    </div>
+
+                    <div class="order-items mb-3">
+                        <h6>Order Items</h6>
+                        <div id="orderItemsContainer">
+                            <!-- Order items will be added here dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="order-summary mb-3">
+                        <div class="d-flex justify-content-between">
+                            <strong>Subtotal:</strong>
+                            <span id="subtotal">R 0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <strong>VAT (15%):</strong>
+                            <span id="vatAmount">R 0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <strong>Total:</strong>
+                            <span id="totalAmount" class="fw-bold text-success">R 0.00</span>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="orderItemsData" name="orderItemsJson" />
+
+                    <button type="submit" class="btn btn-success btn-lg w-100">
+                        <i class="fas fa-check"></i> Complete Sale
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let orderItems = [];
+
+        // Product card click handler
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const productId = this.dataset.productId;
+                const productName = this.dataset.productName;
+                const price = parseFloat(this.dataset.price);
+                const isSixPack = this.dataset.isSixpack === 'True';
+
+                // Check if product already in order
+                const existingItem = orderItems.find(item => item.productId == productId);
+                if (existingItem) {
+                    existingItem.quantity += isSixPack ? 1 : 1;
+                } else {
+                    orderItems.push({
+                        productId: parseInt(productId),
+                        productName: productName,
+                        quantity: isSixPack ? 1 : 1,
+                        unitPrice: price,
+                        totalPrice: price * (isSixPack ? 1 : 1),
+                        isSixPack: isSixPack,
+                        inventory: { productId: parseInt(productId) }
+                    });
+                }
+
+                updateOrderDisplay();
+            });
+        });
+
+        function updateOrderDisplay() {
+            const container = document.getElementById('orderItemsContainer');
+            const subtotalElement = document.getElementById('subtotal');
+            const vatElement = document.getElementById('vatAmount');
+            const totalElement = document.getElementById('totalAmount');
+            const orderItemsData = document.getElementById('orderItemsData');
+
+            // Clear container
+            container.innerHTML = '';
+
+            let subtotal = 0;
+
+            orderItems.forEach((item, index) => {
+                subtotal += item.totalPrice;
+
+                const itemElement = document.createElement('div');
+                itemElement.className = 'order-item d-flex justify-content-between align-items-center mb-2 p-2 border rounded';
+                itemElement.innerHTML = `
+                    <div>
+                        <strong>${item.productName}</strong>
+                        <br>
+                        <small class="text-muted">
+                            ${item.quantity} × R ${item.unitPrice.toFixed(2)}
+                            ${item.isSixPack ? ' (Six-Pack)' : ''}
+                        </small>
+                    </div>
+                    <div class="text-end">
+                        <strong>R ${item.totalPrice.toFixed(2)}</strong>
+                        <br>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem(${index})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(itemElement);
+            });
+
+            const vat = subtotal * 0.15;
+            const total = subtotal + vat;
+
+            subtotalElement.textContent = `R ${subtotal.toFixed(2)}`;
+            vatElement.textContent = `R ${vat.toFixed(2)}`;
+            totalElement.textContent = `R ${total.toFixed(2)}`;
+
+            // Update hidden field with order items data
+            orderItemsData.value = JSON.stringify(orderItems);
+        }
+
+        function removeItem(index) {
+            orderItems.splice(index, 1);
+            updateOrderDisplay();
+        }
+
+        // Form submission handler
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            if (orderItems.length === 0) {
+                e.preventDefault();
+                alert('Please add at least one item to the order.');
+                return;
+            }
+        });
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,211 @@
+﻿@model List<MaziyaInnPubVleis.Models.EmployeeSchedule>
+@{
+    ViewData["Title"] = "Employee Schedules";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">
+            <i class="fas fa-user-clock"></i> Employee Schedules
+        </h1>
+        <div class="btn-group">
+            <a href="@Url.Action("CreateSchedule", "Manager")" class="btn btn-outline-success">
+                <i class="fas fa-plus"></i> Create Schedule
+            </a>
+            <a href="@Url.Action("EmployeeManagement", "Manager")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Employees
+            </a>
+        </div>
+    </div>
+
+    <!-- Upcoming Shifts -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h6 class="m-0 font-weight-bold">
+                <i class="fas fa-calendar-alt"></i> Upcoming Shifts
+            </h6>
+        </div>
+        <div class="card-body">
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover" id="schedulesTable">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Employee</th>
+                                <th>Shift Date</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Shift Type</th>
+                                <th>Duration</th>
+                                <th>Notes</th>
+                                <th>Created By</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var schedule in Model)
+                            {
+                                var duration = schedule.EndTime - schedule.StartTime;
+                                <tr>
+                                    <td>
+                                        <strong>@schedule.Employee?.Username</strong>
+                                        <br>
+                                        <small class="text-muted">@schedule.Employee?.Role</small>
+                                    </td>
+                                    <td>
+                                        @schedule.ShiftDate.ToString("MMM dd, yyyy")
+                                        <br>
+                                        <small class="text-muted">@schedule.ShiftDate.ToString("dddd")</small>
+                                    </td>
+                                    <td>@schedule.StartTime.ToString(@"hh\:mm")</td>
+                                    <td>@schedule.EndTime.ToString(@"hh\:mm")</td>
+                                    <td>
+                                        <span class="badge badge-@GetShiftTypeBadgeClass(schedule.ShiftType)">
+                                            @schedule.ShiftType
+                                        </span>
+                                    </td>
+                                    <td>@duration.Hours hours</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(schedule.Notes))
+                                        {
+                                            <small class="text-muted">@schedule.Notes</small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <small>@schedule.CreatedBy?.Username</small>
+                                        <br>
+                                        <small class="text-muted">@schedule.CreatedDate.ToString("MMM dd")</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary"
+                                                    onclick="editSchedule(@schedule.ScheduleId)">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger"
+                                                    onclick="deleteSchedule(@schedule.ScheduleId)">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4">
+                    <i class="fas fa-calendar-times fa-2x text-muted mb-3"></i>
+                    <p class="text-muted">No upcoming schedules found.</p>
+                    <a href="@Url.Action("CreateSchedule", "Manager")" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create First Schedule
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Weekly Schedule Overview -->
+    <div class="card">
+        <div class="card-header">
+            <h6 class="m-0 font-weight-bold text-primary">This Week's Schedule</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Employee</th>
+                            @for (int i = 0; i < 7; i++)
+                            {
+                                var date = DateTime.Today.AddDays(i);
+                                <th class="text-center @(date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday ? "table-info" : "")">
+                                    @date.ToString("ddd")<br>
+                                    <small>@date.ToString("MMM dd")</small>
+                                </th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var employee in Model.Select(s => s.Employee).Distinct().Take(5))
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@employee.Username</strong>
+                                    <br>
+                                    <small class="text-muted">@employee.Role</small>
+                                </td>
+                                @for (int i = 0; i < 7; i++)
+                                {
+                                    var date = DateTime.Today.AddDays(i);
+                                    var shifts = Model.Where(s => s.EmployeeId == employee.UserId && s.ShiftDate.Date == date.Date).ToList();
+                                    <td class="text-center">
+                                        @if (shifts.Any())
+                                        {
+                                            foreach (var shift in shifts)
+                                            {
+                                                <div class="small">
+                                                    @shift.StartTime.ToString(@"hh\:mm") - @shift.EndTime.ToString(@"hh\:mm")
+                                                    <br>
+                                                    <span class="badge badge-sm @GetShiftTypeBadgeClass(shift.ShiftType)">
+                                                        @shift.ShiftType
+                                                    </span>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    public string GetShiftTypeBadgeClass(string shiftType)
+    {
+        return shiftType?.ToLower() switch
+        {
+            "morning" => "success",
+            "evening" => "warning",
+            "night" => "info",
+            "weekend" => "danger",
+            _ => "secondary"
+        };
+    }
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#schedulesTable').DataTable({
+                pageLength: 25,
+                order: [[1, 'asc']]
+            });
+        });
+
+        function editSchedule(scheduleId) {
+            alert('Edit schedule #' + scheduleId + ' - Implementation would go here');
+        }
+
+        function deleteSchedule(scheduleId) {
+            if (confirm('Are you sure you want to delete this schedule?')) {
+                alert('Delete schedule #' + scheduleId + ' - Implementation would go here');
+            }
+        }
+    </script>
+}

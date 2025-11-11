@@ -1,0 +1,183 @@
+﻿@model List<MaziyaInnPubVleis.Models.EventBooking>
+@{
+    ViewData["Title"] = "Event Bookings";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">
+            <i class="fas fa-ticket-alt"></i> Event Bookings
+        </h1>
+        <div class="btn-group">
+            <a href="@Url.Action("EventManagement", "Manager")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Events
+            </a>
+        </div>
+    </div>
+
+    <!-- Booking Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center py-3">
+                    <h6>Total Bookings</h6>
+                    <h4>@Model.Count</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center py-3">
+                    <h6>Confirmed</h6>
+                    <h4>@Model.Count(b => b.Status == BookingStatus.Confirmed)</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center py-3">
+                    <h6>Pending</h6>
+                    <h4>@Model.Count(b => b.Status == BookingStatus.Pending)</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center py-3">
+                    <h6>Total Revenue</h6>
+                    <h4>R @Model.Sum(b => b.TotalAmount).ToString("N2")</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bookings Table -->
+    <div class="card">
+        <div class="card-header">
+            <h6 class="m-0 font-weight-bold text-primary">All Bookings</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="bookingsTable">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Event</th>
+                            <th>Customer</th>
+                            <th>Booking Date</th>
+                            <th>Tickets</th>
+                            <th>Total Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var booking in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>#@booking.BookingId</strong>
+                                </td>
+                                <td>
+                                    <strong>@booking.Event?.EventName</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        @booking.Event?.EventDate.ToString("MMM dd, yyyy HH:mm")
+                                    </small>
+                                </td>
+                                <td>
+                                    @booking.Customer?.Name
+                                    <br>
+                                    <small class="text-muted">@booking.Customer?.Email</small>
+                                </td>
+                                <td>
+                                    @booking.BookingDate.ToString("MMM dd, yyyy")
+                                    <br>
+                                    <small class="text-muted">@booking.BookingDate.ToString("HH:mm")</small>
+                                </td>
+                                <td>
+                                    <span class="badge badge-primary">@booking.NumberOfTickets</span>
+                                </td>
+                                <td>R @booking.TotalAmount.ToString("N2")</td>
+                                <td>
+                                    <span class="badge badge-@GetBookingStatusBadgeClass(booking.Status)">
+                                        @booking.Status
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-info"
+                                                onclick="viewBookingDetails(@booking.BookingId)">
+                                            <i class="fas fa-eye"></i> Details
+                                        </button>
+                                        @if (booking.Status == BookingStatus.Pending)
+                                        {
+                                            <button class="btn btn-outline-success"
+                                                    onclick="confirmBooking(@booking.BookingId)">
+                                                <i class="fas fa-check"></i> Confirm
+                                            </button>
+                                        }
+                                        @if (booking.Status == BookingStatus.Confirmed && booking.Event?.EventDate >= DateTime.Today)
+                                        {
+                                            <button class="btn btn-outline-danger"
+                                                    onclick="cancelBooking(@booking.BookingId)">
+                                                <i class="fas fa-times"></i> Cancel
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#bookingsTable').DataTable({
+                pageLength: 25,
+                order: [[3, 'desc']]
+            });
+        });
+
+        function viewBookingDetails(bookingId) {
+            alert('Viewing details for booking #' + bookingId);
+            // Implementation would show booking details modal
+        }
+
+        function confirmBooking(bookingId) {
+            if (confirm('Are you sure you want to confirm this booking?')) {
+                // Implementation would confirm the booking
+                alert('Booking #' + bookingId + ' confirmed!');
+                location.reload();
+            }
+        }
+
+        function cancelBooking(bookingId) {
+            const reason = prompt('Please enter reason for cancellation:');
+            if (reason) {
+                // Implementation would cancel the booking
+                alert('Booking #' + bookingId + ' cancelled!');
+                location.reload();
+            }
+        }
+    </script>
+}
+
+@functions {
+    public string GetBookingStatusBadgeClass(BookingStatus status)
+    {
+        return status switch
+        {
+            BookingStatus.Confirmed => "success",
+            BookingStatus.Pending => "warning",
+            BookingStatus.Cancelled => "danger",
+            BookingStatus.Attended => "info",
+            _ => "secondary"
+        };
+    }
+}

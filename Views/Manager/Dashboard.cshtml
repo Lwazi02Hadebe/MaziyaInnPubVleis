@@ -1,0 +1,184 @@
+﻿@model MaziyaInnPubVleis.Controllers.ManagerDashboardViewModel
+@{
+    ViewData["Title"] = "Manager Dashboard";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Manager Dashboard</h1>
+        <div class="btn-group">
+            <a href="@Url.Action("Reports", "Manager")" class="btn btn-outline-primary">
+                <i class="fas fa-chart-bar"></i> Reports
+            </a>
+            <a href="@Url.Action("StockManagement", "Manager")" class="btn btn-outline-success">
+                <i class="fas fa-boxes"></i> Stock
+            </a>
+            <a href="@Url.Action("PendingOrders", "Manager")" class="btn btn-outline-warning">
+                <i class="fas fa-clipboard-list"></i> Pending Orders
+            </a>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Today's Sales</div>
+                            <div class="h5 mb-0">R @Model.TotalSalesToday.ToString("N2")</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-money-bill-wave fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Pending Orders</div>
+                            <div class="h5 mb-0">@Model.PendingOrdersCount</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-danger text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Low Stock Items</div>
+                            <div class="h5 mb-0">@Model.LowStockItemsCount</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Upcoming Events</div>
+                            <div class="h5 mb-0">@Model.UpcomingEventsCount</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Orders -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Orders</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var order in Model.RecentOrders)
+                                {
+                                    <tr>
+                                        <td>#@order.OrderId</td>
+                                        <td>@order.Customer?.Name</td>
+                                        <td>@order.OrderDate.ToString("MMM dd, yyyy HH:mm")</td>
+                                        <td>R @order.TotalAmount.ToString("N2")</td>
+                                        <td>
+                                            <span class="badge badge-@(order.Status == OrderStatus.Completed ? "success" :
+                                                                                                  order.Status == OrderStatus.Pending ? "warning" : "secondary")">
+                                            @order.Status
+                                        </span>
+                                    </td>
+                                </tr>
+                                                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <a href="@Url.Action("Index", "Order")" class="btn btn-sm btn-primary">View All Orders</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Stock Alerts -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="m-0 font-weight-bold">Low Stock Alerts</h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.LowStockItems.Any())
+                    {
+                        <div class="list-group">
+                            @foreach (var item in Model.LowStockItems)
+                            {
+                                <div class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">@item.ProductName</h6>
+                                        <small class="text-danger">@item.StockLevel left</small>
+                                    </div>
+                                    <p class="mb-1 text-muted">Min: @item.MinimumStockLevel</p>
+                                    <small>@item.Description</small>
+                                </div>
+                            }
+                        </div>
+                        <a href="@Url.Action("LowStockAlerts", "Manager")" class="btn btn-sm btn-danger mt-3">View All Alerts</a>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No low stock items</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="@Url.Action("CreateEvent", "Manager")" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-plus"></i> Create Event
+                        </a>
+                        <a href="@Url.Action("CreateSchedule", "Manager")" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-user-clock"></i> Schedule Employee
+                        </a>
+                        <a href="@Url.Action("PendingGRVs", "Manager")" class="btn btn-outline-warning btn-sm">
+                            <i class="fas fa-clipboard-check"></i> Authorize GRVs
+                        </a>
+                        <a href="@Url.Action("EmployeeAttendanceReport", "Manager")" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-user-check"></i> View Attendance
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

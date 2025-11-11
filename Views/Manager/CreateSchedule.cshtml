@@ -1,0 +1,216 @@
+﻿@model MaziyaInnPubVleis.Models.EmployeeSchedule
+@{
+    ViewData["Title"] = "Create Employee Schedule";
+    var employees = ViewBag.Employees as List<MaziyaInnPubVleis.Models.User> ?? new List<MaziyaInnPubVleis.Models.User>();
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">
+            <i class="fas fa-user-clock"></i> Create Employee Schedule
+        </h1>
+        <a href="@Url.Action("EmployeeSchedules", "Manager")" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Schedules
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">Schedule Details</h6>
+                </div>
+                <div class="card-body">
+                    <form asp-action="CreateSchedule" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="form-group">
+                            <label asp-for="EmployeeId" class="control-label">Employee</label>
+                            <select asp-for="EmployeeId" class="form-control" required>
+                                <option value="">Select Employee</option>
+                                @foreach (var employee in employees)
+                                {
+                                    <option value="@employee.UserId">@employee.Username (@employee.Role)</option>
+                                }
+                            </select>
+                            <span asp-validation-for="EmployeeId" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="ShiftDate" class="control-label">Shift Date</label>
+                                    <input asp-for="ShiftDate" type="date" class="form-control"
+                                           min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                                    <span asp-validation-for="ShiftDate" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="ShiftType" class="control-label">Shift Type</label>
+                                    <select asp-for="ShiftType" class="form-control" required>
+                                        <option value="">Select Shift Type</option>
+                                        <option value="Morning">Morning (08:00 - 16:00)</option>
+                                        <option value="Evening">Evening (12:00 - 20:00)</option>
+                                        <option value="Night">Night (20:00 - 04:00)</option>
+                                        <option value="Weekend">Weekend Special</option>
+                                        <option value="Custom">Custom</option>
+                                    </select>
+                                    <span asp-validation-for="ShiftType" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="StartTime" class="control-label">Start Time</label>
+                                    <input asp-for="StartTime" type="time" class="form-control" required />
+                                    <span asp-validation-for="StartTime" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="EndTime" class="control-label">End Time</label>
+                                    <input asp-for="EndTime" type="time" class="form-control" required />
+                                    <span asp-validation-for="EndTime" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Notes" class="control-label">Notes (Optional)</label>
+                            <textarea asp-for="Notes" class="form-control" rows="3"
+                                      placeholder="Any special instructions or notes..."></textarea>
+                            <span asp-validation-for="Notes" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Create Schedule
+                            </button>
+                            <a href="@Url.Action("EmployeeSchedules", "Manager")" class="btn btn-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Quick Help -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info-circle"></i> Scheduling Guidelines
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <h6>Shift Types:</h6>
+                    <ul class="small">
+                        <li><strong>Morning:</strong> 08:00 - 16:00</li>
+                        <li><strong>Evening:</strong> 12:00 - 20:00</li>
+                        <li><strong>Night:</strong> 20:00 - 04:00</li>
+                        <li><strong>Weekend:</strong> Flexible hours</li>
+                        <li><strong>Custom:</strong> Any specific hours</li>
+                    </ul>
+
+                    <h6>Best Practices:</h6>
+                    <ul class="small">
+                        <li>Ensure minimum 8 hours between shifts</li>
+                        <li>Maximum 40 hours per week per employee</li>
+                        <li>Consider employee roles and responsibilities</li>
+                        <li>Plan for peak business hours</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Today's Schedule -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-calendar-day"></i> Today's Schedule
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="small">
+                        @{
+                            var todaysSchedules = ViewBag.TodaysSchedules as List<MaziyaInnPubVleis.Models.EmployeeSchedule> ?? new List<MaziyaInnPubVleis.Models.EmployeeSchedule>();
+                        }
+                        @if (todaysSchedules.Any())
+                        {
+                            foreach (var schedule in todaysSchedules.Take(3))
+                            {
+                                <div class="mb-2 p-2 border rounded">
+                                    <strong>@schedule.Employee?.Username</strong><br>
+                                    @schedule.StartTime.ToString(@"hh\:mm") - @schedule.EndTime.ToString(@"hh\:mm")
+                                    <span class="badge badge-sm @GetShiftTypeBadgeClass(schedule.ShiftType) float-right">
+                                        @schedule.ShiftType
+                                    </span>
+                                </div>
+                            }
+                            @if (todaysSchedules.Count > 3)
+                            {
+                                <p class="text-center mt-2">
+                                    <small>+ @(todaysSchedules.Count - 3) more shifts today</small>
+                                </p>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted text-center">No shifts scheduled for today</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Auto-set times based on shift type selection
+            $('#ShiftType').change(function () {
+                var shiftType = $(this).val();
+                switch (shiftType) {
+                    case 'Morning':
+                        $('#StartTime').val('08:00');
+                        $('#EndTime').val('16:00');
+                        break;
+                    case 'Evening':
+                        $('#StartTime').val('12:00');
+                        $('#EndTime').val('20:00');
+                        break;
+                    case 'Night':
+                        $('#StartTime').val('20:00');
+                        $('#EndTime').val('04:00');
+                        break;
+                    case 'Custom':
+                        $('#StartTime').val('');
+                        $('#EndTime').val('');
+                        break;
+                }
+            });
+
+            // Set minimum date to today
+            var today = new Date().toISOString().split('T')[0];
+            $('#ShiftDate').attr('min', today);
+        });
+    </script>
+}
+
+@functions {
+    public string GetShiftTypeBadgeClass(string shiftType)
+    {
+        return shiftType?.ToLower() switch
+        {
+            "morning" => "success",
+            "evening" => "warning",
+            "night" => "info",
+            "weekend" => "danger",
+            _ => "secondary"
+        };
+    }
+}

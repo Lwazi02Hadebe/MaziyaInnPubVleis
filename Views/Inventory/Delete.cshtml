@@ -1,0 +1,139 @@
+﻿﻿
+@model MaziyaInnPubVleis.Models.Inventory
+@{
+    ViewData["Title"] = "Delete Product";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Delete Product</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="@Url.Action("Index")" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Inventory
+        </a>
+    </div>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="alert alert-warning">
+    <h5 class="alert-heading">
+        <i class="fas fa-exclamation-triangle"></i> Warning
+    </h5>
+    <p class="mb-0">Are you sure you want to delete this product? This action cannot be undone.</p>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Product Details</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Product ID:</dt>
+            <dd class="col-sm-9">@Model.ProductId</dd>
+
+            <dt class="col-sm-3">Product Name:</dt>
+            <dd class="col-sm-9">@Model.ProductName</dd>
+
+            <dt class="col-sm-3">Description:</dt>
+            <dd class="col-sm-9">@(string.IsNullOrEmpty(Model.Description) ? "N/A" : Model.Description)</dd>
+
+            <dt class="col-sm-3">Current Stock:</dt>
+            <dd class="col-sm-9">
+                <span class="badge @(Model.StockLevel <= Model.MinimumStockLevel ? "bg-warning" : "bg-success")">
+                    @Model.StockLevel units
+                </span>
+            </dd>
+
+            <dt class="col-sm-3">Unit Price:</dt>
+            <dd class="col-sm-9">R @Model.UnitPrice.ToString("N2")</dd>
+
+            <dt class="col-sm-3">Pack Type:</dt>
+            <dd class="col-sm-9">
+                @if (Model.IsSixPack)
+                {
+                    <span class="badge bg-info">Six-Pack (@Model.SixPackQuantity units)</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">Single Unit</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Supplier:</dt>
+            <dd class="col-sm-9">@(Model.Supplier?.Name ?? "No Supplier")</dd>
+
+            <dt class="col-sm-3">Status:</dt>
+            <dd class="col-sm-9">
+                @if (Model.IsActive)
+                {
+                    <span class="badge bg-success">Active</span>
+                }
+                else
+                {
+                    <span class="badge bg-danger">Inactive</span>
+                }
+            </dd>
+        </dl>
+
+        <div class="alert alert-info">
+            <small>
+                <i class="fas fa-info-circle"></i>
+                <strong>Note:</strong> This will perform a soft delete. The product will be marked as inactive but retained in the database for record-keeping purposes.
+            </small>
+        </div>
+
+        <form asp-action="DeleteConfirmed" method="post">
+            <input type="hidden" asp-for="ProductId" />
+            
+            <div class="mb-3">
+                <label for="confirmationText" class="form-label">
+                    Type "DELETE" to confirm:
+                </label>
+                <input type="text" class="form-control" id="confirmationText" name="confirmationText" 
+                       placeholder="Type DELETE here" required
+                       oninput="validateConfirmation(this.value)" />
+                <div class="form-text">This is required to prevent accidental deletions.</div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger" id="deleteButton" disabled>
+                    <i class="fas fa-trash"></i> Confirm Delete
+                </button>
+                <a href="@Url.Action("Details", new { id = Model.ProductId })" class="btn btn-info">
+                    <i class="fas fa-eye"></i> View Details
+                </a>
+                <a href="@Url.Action("Index")" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function validateConfirmation(value) {
+            const deleteButton = document.getElementById('deleteButton');
+            if (value.toUpperCase() === 'DELETE') {
+                deleteButton.disabled = false;
+            } else {
+                deleteButton.disabled = true;
+            }
+        }
+
+        // Prevent form submission if not confirmed
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const confirmationText = document.getElementById('confirmationText').value;
+            if (confirmationText.toUpperCase() !== 'DELETE') {
+                e.preventDefault();
+                alert('Please type "DELETE" to confirm deletion.');
+            }
+        });
+    </script>
+}

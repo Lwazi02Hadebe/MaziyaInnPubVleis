@@ -1,0 +1,63 @@
+﻿@model IEnumerable<MaziyaInnPubVleis.Models.Inventory>
+@{
+    ViewData["Title"] = "Low Stock Alerts";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Low Stock Alerts</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="@Url.Action("Index")" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Inventory
+        </a>
+    </div>
+</div>
+
+@if (Model.Any())
+{
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        There are @Model.Count() products with low stock levels that need attention.
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-warning">
+                <tr>
+                    <th>Product Name</th>
+                    <th>Description</th>
+                    <th>Current Stock</th>
+                    <th>Minimum Level</th>
+                    <th>Supplier</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.ProductName</td>
+                        <td>@item.Description</td>
+                        <td>
+                            <span class="badge bg-danger">@item.StockLevel</span>
+                        </td>
+                        <td>@item.MinimumStockLevel</td>
+                        <td>@(item.Supplier?.Name ?? "N/A")</td>
+                        <td>
+                            <a href="@Url.Action("Edit", new { id = item.ProductId })"
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i> Restock
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        All inventory items have adequate stock levels. No low stock alerts at this time.
+    </div>
+}

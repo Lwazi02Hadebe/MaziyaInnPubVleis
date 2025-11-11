@@ -1,0 +1,279 @@
+﻿@model IEnumerable<MaziyaInnPubVleis.Models.Inventory>
+@{
+    ViewData["Title"] = "Inventory Report";
+    var lowStockItems = ViewBag.LowStockItems as IEnumerable<MaziyaInnPubVleis.Models.Inventory>;
+    var totalValue = ViewBag.TotalInventoryValue as decimal? ?? 0;
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Inventory Report</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="@Url.Action("Sales")" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Reports
+        </a>
+        <button class="btn btn-sm btn-outline-primary ms-2" onclick="window.print()">
+            <i class="fas fa-print"></i> Print Report
+        </button>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@Model.Count()</h4>
+                        <p class="card-text">Total Products</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-boxes fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">R @totalValue.ToString("N2")</h4>
+                        <p class="card-text">Total Inventory Value</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-money-bill-wave fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@(lowStockItems?.Count() ?? 0)</h4>
+                        <p class="card-text">Low Stock Items</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (lowStockItems?.Any() == true)
+{
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> Low Stock Alerts
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Current Stock</th>
+                                    <th>Minimum Level</th>
+                                    <th>Supplier</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in lowStockItems)
+                                {
+                                    <tr>
+                                        <td>@item.ProductName</td>
+                                        <td>
+                                            <span class="badge bg-danger">@item.StockLevel</span>
+                                        </td>
+                                        <td>@item.MinimumStockLevel</td>
+                                        <td>@(item.Supplier?.Name ?? "N/A")</td>
+                                        <td>
+                                            <span class="badge bg-warning">Needs Restocking</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Complete Inventory Listing</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Product ID</th>
+                                <th>Product Name</th>
+                                <th>Description</th>
+                                <th>Stock Level</th>
+                                <th>Min Level</th>
+                                <th>Unit Price</th>
+                                <th>Cost Price</th>
+                                <th>Stock Value</th>
+                                <th>Supplier</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                var stockValue = item.StockLevel * item.CostPrice;
+                                <tr>
+                                    <td>@item.ProductId</td>
+                                    <td>@item.ProductName</td>
+                                    <td>@item.Description</td>
+                                    <td>
+                                        <span class="badge @(item.StockLevel <= item.MinimumStockLevel ? "bg-danger" : item.StockLevel <= item.MinimumStockLevel * 2 ? "bg-warning" : "bg-success")">
+                                            @item.StockLevel
+                                        </span>
+                                    </td>
+                                    <td>@item.MinimumStockLevel</td>
+                                    <td>R @item.UnitPrice.ToString("N2")</td>
+                                    <td>R @item.CostPrice.ToString("N2")</td>
+                                    <td class="fw-bold">R @stockValue.ToString("N2")</td>
+                                    <td>@(item.Supplier?.Name ?? "N/A")</td>
+                                    <td>
+                                        @if (item.IsSixPack)
+                                        {
+                                            <span class="badge bg-info">Six-Pack</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Single</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (item.IsActive)
+                                        {
+                                            <span class="badge bg-success">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Inactive</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-dark">
+                                <td colspan="7"><strong>Total Inventory Value</strong></td>
+                                <td colspan="4"><strong>R @totalValue.ToString("N2")</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Inventory Summary</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-6">Total Active Products:</dt>
+                    <dd class="col-sm-6">@Model.Count(i => i.IsActive)</dd>
+
+                    <dt class="col-sm-6">Total Inactive Products:</dt>
+                    <dd class="col-sm-6">@Model.Count(i => !i.IsActive)</dd>
+
+                    <dt class="col-sm-6">Six-Pack Items:</dt>
+                    <dd class="col-sm-6">@Model.Count(i => i.IsSixPack)</dd>
+
+                    <dt class="col-sm-6">Single Items:</dt>
+                    <dd class="col-sm-6">@Model.Count(i => !i.IsSixPack)</dd>
+
+                    <dt class="col-sm-6">Items Needing Restock:</dt>
+                    <dd class="col-sm-6">@Model.Count(i => i.StockLevel <= i.MinimumStockLevel)</dd>
+
+                    <dt class="col-sm-6">Healthy Stock Items:</dt>
+                    <dd class="col-sm-6">@Model.Count(i => i.StockLevel > i.MinimumStockLevel)</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Inventory Health</h5>
+            </div>
+            <div class="card-body">
+                @{
+                    var healthyCount = Model.Count(i => i.StockLevel > i.MinimumStockLevel);
+                    var lowCount = Model.Count(i => i.StockLevel <= i.MinimumStockLevel);
+                    var totalCount = Model.Count();
+                    var healthyPercentage = totalCount > 0 ? (healthyCount * 100 / totalCount) : 0;
+                }
+
+                <div class="mb-3">
+                    <label class="form-label">Stock Health</label>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-success" role="progressbar"
+                             style="width: @healthyPercentage%;"
+                             aria-valuenow="@healthyPercentage" aria-valuemin="0" aria-valuemax="100">
+                            @healthyPercentage% Healthy
+                        </div>
+                        <div class="progress-bar bg-danger" role="progressbar"
+                             style="width: @(100 - healthyPercentage)%"
+                             aria-valuenow="@(100 - healthyPercentage)" aria-valuemin="0" aria-valuemax="100">
+                            @(100 - healthyPercentage)% Low
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Inventory Status</label>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-boxes text-primary me-2"></i>
+                        <span>@totalCount total products in inventory</span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Value Analysis</label>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-money-bill-wave text-success me-2"></i>
+                        <span>R @totalValue.ToString("N2") total inventory value</span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Alert Status</label>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        <span>@lowCount items need immediate attention</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
