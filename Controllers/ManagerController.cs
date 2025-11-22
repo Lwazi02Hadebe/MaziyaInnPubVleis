@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MaziyaInnPubVleis.Data;
+using MaziyaInnPubVleis.Filters;
 using MaziyaInnPubVleis.Models;
 using MaziyaInnPubVleis.Services;
-using MaziyaInnPubVleis.Data;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace MaziyaInnPubVleis.Controllers
 {
+    [NoCache]
     public class ManagerController : Controller
     {
         private readonly ApplicationDbContext _context;

@@ -1,13 +1,15 @@
 ﻿// InventoryController.cs
-using Microsoft.AspNetCore.Mvc;
+using MaziyaInnPubVleis.Data;
+using MaziyaInnPubVleis.Filters;
 using MaziyaInnPubVleis.Models;
 using MaziyaInnPubVleis.Services;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using MaziyaInnPubVleis.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace MaziyaInnPubVleis.Controllers
 {
+    [NoCache]
     public class InventoryController : Controller
     {
         private readonly IInventoryService _inventoryService;

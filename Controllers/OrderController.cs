@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MaziyaInnPubVleis.Filters;
 using MaziyaInnPubVleis.Models;
 using MaziyaInnPubVleis.Services;
+using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
 namespace MaziyaInnPubVleis.Controllers
 {
+    [NoCache]
     public class OrderController : Controller
     {
         private readonly IOrderService _orderService;

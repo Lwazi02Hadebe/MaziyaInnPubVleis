@@ -1,9 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
-using MaziyaInnPubVleis.Services;
+using MaziyaInnPubVleis.Filters;
 using MaziyaInnPubVleis.Models;
+using MaziyaInnPubVleis.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace MaziyaInnPubVleis.Controllers
 {
+    [NoCache]
     public class HomeController : Controller
     {
         private readonly IInventoryService _inventoryService;

@@ -1,11 +1,12 @@
-﻿
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MaziyaInnPubVleis.Models;
 using MaziyaInnPubVleis.Services;
 using Microsoft.EntityFrameworkCore;
+using MaziyaInnPubVleis.Filters;
 
 namespace MaziyaInnPubVleis.Controllers
 {
+    [NoCache]
     public class CustomerController : Controller
     {
         private readonly ICustomerService _customerService;
@@ -24,6 +25,9 @@ namespace MaziyaInnPubVleis.Controllers
         // Customer Authentication
         public IActionResult Login()
         {
+            // Clear session and prevent caching
+            ClearSessionAndCache();
+
             if (HttpContext.Session.GetInt32("CustomerId") != null)
             {
                 return RedirectToAction("Index");
@@ -45,6 +49,9 @@ namespace MaziyaInnPubVleis.Controllers
 
                 var customer = await _customerService.LoginCustomerAsync(email, password);
 
+                // Clear any existing session first
+                ClearSessionAndCache();
+
                 HttpContext.Session.SetInt32("CustomerId", customer.CustomerAccountId);
                 HttpContext.Session.SetString("CustomerName", $"{customer.FirstName} {customer.LastName}");
                 HttpContext.Session.SetString("CustomerEmail", customer.Email);
@@ -61,6 +68,9 @@ namespace MaziyaInnPubVleis.Controllers
 
         public IActionResult Register()
         {
+            // Clear session and prevent caching
+            ClearSessionAndCache();
+
             if (HttpContext.Session.GetInt32("CustomerId") != null)
             {
                 return RedirectToAction("Index");
@@ -88,6 +98,9 @@ namespace MaziyaInnPubVleis.Controllers
 
                 var newCustomer = await _customerService.RegisterCustomerAsync(customer);
 
+                // Clear any existing session first
+                ClearSessionAndCache();
+
                 HttpContext.Session.SetInt32("CustomerId", newCustomer.CustomerAccountId);
                 HttpContext.Session.SetString("CustomerName", $"{newCustomer.FirstName} {newCustomer.LastName}");
                 HttpContext.Session.SetString("CustomerEmail", newCustomer.Email);
@@ -109,7 +122,8 @@ namespace MaziyaInnPubVleis.Controllers
             try
             {
                 var customerName = HttpContext.Session.GetString("CustomerName");
-                HttpContext.Session.Clear();
+                ClearSessionAndCache();
+
                 TempData["SuccessMessage"] = $"Goodbye, {customerName}! You have been logged out successfully.";
                 return RedirectToAction("Login");
             }
@@ -118,6 +132,15 @@ namespace MaziyaInnPubVleis.Controllers
                 TempData["ErrorMessage"] = "Error during logout.";
                 return RedirectToAction("Login");
             }
+        }
+
+        // GET: Force logout (for troubleshooting)
+        [HttpGet]
+        public IActionResult ForceLogout()
+        {
+            ClearSessionAndCache();
+            TempData["SuccessMessage"] = "You have been logged out successfully.";
+            return RedirectToAction("Login");
         }
 
         // Customer Dashboard
@@ -427,8 +450,6 @@ namespace MaziyaInnPubVleis.Controllers
                 return RedirectToAction("Orders");
             }
 
-            // For PDF generation, you would use a library like iTextSharp
-            // For now, we'll return the view
             ViewBag.PrintMode = true;
             return View("OrderReceipt", order);
         }
@@ -466,6 +487,29 @@ namespace MaziyaInnPubVleis.Controllers
             var cart = await _customerService.GetCartWithItemsAsync(customerId.Value);
             var count = cart?.CartItems?.Sum(ci => ci.Quantity) ?? 0;
             return Json(new { count });
+        }
+
+        // Test session state
+        public IActionResult CheckSession()
+        {
+            var sessionInfo = new
+            {
+                CustomerId = HttpContext.Session.GetInt32("CustomerId"),
+                CustomerName = HttpContext.Session.GetString("CustomerName"),
+                SessionId = HttpContext.Session.Id,
+                HasSession = !string.IsNullOrEmpty(HttpContext.Session.Id)
+            };
+
+            return Json(sessionInfo);
+        }
+
+        // Helper method to clear session and set no-cache headers
+        private void ClearSessionAndCache()
+        {
+            HttpContext.Session.Clear();
+            Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+            Response.Headers["Expires"] = "0";
+            Response.Headers["Pragma"] = "no-cache";
         }
     }
 }

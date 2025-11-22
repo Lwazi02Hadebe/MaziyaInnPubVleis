@@ -4,9 +4,11 @@ using MaziyaInnPubVleis.Data;
 using Microsoft.EntityFrameworkCore;
 using BCrypt.Net;
 using System.Diagnostics;
+using MaziyaInnPubVleis.Filters;
 
 namespace MaziyaInnPubVleis.Controllers
 {
+    [NoCache]
     public class AuthController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -22,7 +24,7 @@ namespace MaziyaInnPubVleis.Controllers
         public IActionResult Index()
         {
             // Clear any existing sessions to prevent conflicts
-            HttpContext.Session.Clear();
+            ClearSessionAndCache();
 
             _logger.LogInformation("Accessed role selection page");
 
@@ -44,6 +46,9 @@ namespace MaziyaInnPubVleis.Controllers
         [HttpGet]
         public IActionResult AdminLogin()
         {
+            // Clear any existing sessions to prevent conflicts
+            ClearSessionAndCache();
+
             // If already logged in as admin, redirect to admin dashboard
             if (HttpContext.Session.GetInt32("AdminUserId") != null)
             {
@@ -85,6 +90,9 @@ namespace MaziyaInnPubVleis.Controllers
                         // Check if user has admin or manager privileges
                         if (user.Role == UserRole.Admin || user.Role == UserRole.Manager || user.Role == UserRole.Cashier)
                         {
+                            // Clear any existing session first
+                            ClearSessionAndCache();
+
                             // Set admin session with all necessary data
                             HttpContext.Session.SetInt32("AdminUserId", user.UserId);
                             HttpContext.Session.SetString("AdminUsername", user.Username);
@@ -160,7 +168,7 @@ namespace MaziyaInnPubVleis.Controllers
                 var username = HttpContext.Session.GetString("AdminUsername");
 
                 // Clear all session data
-                HttpContext.Session.Clear();
+                ClearSessionAndCache();
 
                 _logger.LogInformation("Admin logout successful for user: {Username}", username);
 
@@ -179,9 +187,48 @@ namespace MaziyaInnPubVleis.Controllers
         [HttpGet]
         public IActionResult Logout()
         {
-            HttpContext.Session.Clear();
+            ClearSessionAndCache();
             TempData["SuccessMessage"] = "You have been logged out successfully.";
             return RedirectToAction("Index", "Auth");
+        }
+
+        // GET: Force logout (for troubleshooting)
+        [HttpGet]
+        public IActionResult ForceLogout()
+        {
+            ClearSessionAndCache();
+            TempData["SuccessMessage"] = "You have been logged out successfully.";
+            return RedirectToAction("Index", "Auth");
+        }
+
+        // Test session state
+        public IActionResult CheckSession()
+        {
+            var sessionInfo = new
+            {
+                AdminUserId = HttpContext.Session.GetInt32("AdminUserId"),
+                CustomerId = HttpContext.Session.GetInt32("CustomerId"),
+                SessionId = HttpContext.Session.Id,
+                HasSession = !string.IsNullOrEmpty(HttpContext.Session.Id)
+            };
+
+            return Json(sessionInfo);
+        }
+
+        // Clear all sessions
+        public IActionResult ClearAllSessions()
+        {
+            ClearSessionAndCache();
+            return Json(new { message = "All sessions cleared" });
+        }
+
+        // Helper method to clear session and set no-cache headers
+        private void ClearSessionAndCache()
+        {
+            HttpContext.Session.Clear();
+            Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+            Response.Headers["Expires"] = "0";
+            Response.Headers["Pragma"] = "no-cache";
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
