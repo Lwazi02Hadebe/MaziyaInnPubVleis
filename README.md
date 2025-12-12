@@ -289,7 +289,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 text
 MIT License
 
-Copyright (c) 2024 Lwazi Hadebe
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -300,7 +299,7 @@ furnished to do so, subject to the following conditions:
 ...
 👥 Team
 👤 Project Lead
-Lwazi Hadebe - GitHub | LinkedIn
+Lwazi Hadebe - GitHub | 
 
 🎨 Design Team
 UI/UX Designers - Interface design
@@ -326,13 +325,6 @@ Quality Assurance - Testing and validation
 🐛 Bug Reports - Open an issue on GitHub
 
 💬 Discussions - Join our community chat
-
-📧 Contact
-Email: project@maziyainn.com
-
-Issues: GitHub Issues
-
-Discussions: GitHub Discussions
 
 🌟 Acknowledgments
 🙏 Special Thanks
